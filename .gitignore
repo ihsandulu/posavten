@@ -1,0 +1,78 @@
+# ==========================================
+# DEPENDENCIES
+# ==========================================
+/vendor/
+
+# ==========================================
+# ENVIRONMENT
+# ==========================================
+.env
+.env.*
+!.env.example
+
+# ==========================================
+# DATABASE BACKUP
+# ==========================================
+*.sql
+
+# ==========================================
+# WRITABLE - LOGS
+# ==========================================
+/writable/logs/*
+!/writable/logs/index.html
+
+# ==========================================
+# WRITABLE - SESSION
+# ==========================================
+/writable/session/*
+!/writable/session/index.html
+
+# ==========================================
+# WRITABLE - DEBUGBAR
+# ==========================================
+/writable/debugbar/
+
+# ==========================================
+# WRITABLE - CACHE
+# ==========================================
+/writable/cache/*
+!/writable/cache/index.html
+
+# ==========================================
+# WRITABLE - UPLOADS
+# ==========================================
+/writable/uploads/*
+!/writable/uploads/index.html
+
+# ==========================================
+# PRODUCT IMAGES
+# ==========================================
+/public/images/product_picture/*
+!/public/images/product_picture/.gitkeep
+
+# ==========================================
+# STORE IMAGES
+# ==========================================
+/public/images/store_picture/*
+!/public/images/store_picture/no_image.png
+
+# ==========================================
+# ATTACHMENTS
+# ==========================================
+/public/images/request0_attachment/*
+/public/images/attached-files/*
+/public/images/product_picture.zip
+
+# ==========================================
+# DOCUMENTS IN IMAGES FOLDER
+# ==========================================
+/public/images/*.pdf
+/public/images/*.xlsx
+
+# ==========================================
+# TEMPORARY FILES
+# ==========================================
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
