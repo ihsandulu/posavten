@@ -76,11 +76,8 @@ class api extends baseController
 
                 $inputu = [];
 
-                foreach ($this->request->getGet() as $e => $f) {
-                    if ($e != 'create') {
-                        $inputu[$e] = $f;
-                    }
-                }
+                $inputu["member_name"] = $username;
+                $inputu["member_email"] = $email;
 
                 // Member
                 $inputu["store_id"] = 1;
