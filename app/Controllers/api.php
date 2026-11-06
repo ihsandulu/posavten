@@ -54,15 +54,16 @@ class api extends baseController
         $this->response->setContentType('application/json');
 
         $username = $this->request->getGet('username');
+        $email = $this->request->getGet('email');
         $passwordInput = $this->request->getGet('password');
 
         $response = [];
 
-        if ($username && $passwordInput) {
+        if ($username && $passwordInput && $email) {
 
             // Cek tabel member berdasarkan username
             $member = $this->db->table('member')
-                ->where('member_email', $username)
+                ->where('member_email', $email)
                 ->get()
                 ->getRow();
 
@@ -106,6 +107,7 @@ class api extends baseController
                     'status'   => 'success',
                     'id'       => $member->member_id,
                     'username' => $member->member_name,
+                    'email'    => $member->member_email,
                     'token'    => $member->member_token,
                     'message'  => 'Login Berhasil!'
                 ];
@@ -148,6 +150,7 @@ class api extends baseController
                         'status'   => 'success',
                         'id'       => $member->member_id,
                         'username' => $member->member_name,
+                        'email'    => $member->member_email,
                         'token'    => $member->member_token,
                         'message'  => 'Login Berhasil!'
                     ];
@@ -175,6 +178,7 @@ class api extends baseController
                             'status'   => 'success',
                             'id'       => $user->user_id,
                             'username' => $user->user_name,
+                            'email'    => $user->user_email,
                             'token'    => $user->user_token,
                             'message'  => 'Login Berhasil!'
                         ];
@@ -189,7 +193,7 @@ class api extends baseController
 
                     $response = [
                         'status'  => 'fail',
-                        'message' => 'username/NIK Salah!'
+                        'message' => 'Email Salah!'
                     ];
                 }
             }
