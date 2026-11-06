@@ -85,7 +85,7 @@ class api extends baseController
                 // Member
                 $inputu["store_id"] = 1;
                 $inputu["member_password"] = password_hash(
-                    $inputu["member_password"],
+                    $passwordInput,
                     PASSWORD_DEFAULT
                 );
                 
