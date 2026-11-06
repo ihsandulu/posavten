@@ -19,6 +19,97 @@ class api extends baseController
         echo "Page Not Found!";
     }
 
+    public function simpan_token()
+    {
+        $tipe = $this->input->get("tipe");
+        if ($tipe == "user") {
+            $inputuser["user_token"] = $this->input->get("token");
+            $where["user_id"] = $this->input->get("id");
+            $this->db->update("user", $inputuser, $where);
+        } else {
+            $inputuser["member_token"] = $this->input->get("token");
+            $where["member_id"] = $this->input->get("id");
+            $this->db->update("member", $inputuser, $where);
+        }
+        echo $this->input->get("tipe");
+    }
+
+    public function login()
+    {
+        header("Access-Control-Allow-Origin: *");
+        header("Content-Type: application/json");
+
+        // CI3 pakai input->get()
+        $username = $this->input->get("username");
+        $passwordInput = $this->input->get("password");
+
+        $response = [];
+
+        if ($username && $passwordInput) {
+            $this->db->from('member');
+            $query = $this->db->get();
+            if ($query->num_rows() > 0) {
+                $member = $query->row(); // cukup ambil 1
+                $password = $member->member_password;
+                if (password_verify($passwordInput, $password)) {
+                    $response = [
+                        'tipe' => 'member',
+                        'status' => 'success',
+                        'id' => $member->member_id,
+                        'username' => $member->member_name,
+                        'token' => $member->member_token,
+                        'message' => 'Login Berhasil!',
+                        'password' => $passwordInput // ⚠️ jangan dipakai di production
+                    ];
+                } else {
+
+                    $response = [
+                        'status' => 'fail',
+                        'message' => 'Password Salah!'
+                    ];
+                }
+            } else {
+                $this->db->from('user');
+                $query = $this->db->get();
+                if ($query->num_rows() > 0) {
+                    $user = $query->row(); // cukup ambil 1
+                    $password = $user->user_password;
+                    if (password_verify($passwordInput, $password)) {
+                        $response = [
+                            'tipe' => 'user',
+                            'status' => 'success',
+                            'id' => $user->user_id,
+                            'username' => $user->user_name,
+                            'token' => $user->user_token,
+                            'message' => 'Login Berhasil!',
+                            'password' => $passwordInput // ⚠️ jangan dipakai di production
+                        ];
+                    } else {
+
+                        $response = [
+                            'status' => 'fail',
+                            'message' => 'Password Salah!'
+                        ];
+                    }
+                } else {
+
+                    $response = [
+                        'status' => 'fail',
+                        'message' => 'username/NIK Salah!'
+                    ];
+                }
+            }
+        } else {
+
+            $response = [
+                'status' => 'fail',
+                'message' => 'Login Tidak Valid!'
+            ];
+        }
+
+        echo json_encode($response);
+    }
+
     public function active()
     {
         $input["store_active"] = $this->request->getGET("store_active");
@@ -55,9 +146,9 @@ class api extends baseController
     }
 
     public function unitsecond()
-    { 
+    {
         $transactiond_unit = $this->request->getGet("transactiond_unit");
-        ?>
+?>
         <option value="0" <?= ($transactiond_unit == "0") ? "selected" : ""; ?>>Unit</option>
         <?php
         $unit = $this->db->table("unit")
