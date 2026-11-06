@@ -21,80 +21,101 @@ class api extends baseController
 
     public function simpan_token()
     {
-        $tipe = $this->input->get("tipe");
+        $tipe  = $this->request->getGet('tipe');
+        $token = $this->request->getGet('token');
+        $id    = $this->request->getGet('id');
+
         if ($tipe == "user") {
-            $inputuser["user_token"] = $this->input->get("token");
-            $where["user_id"] = $this->input->get("id");
-            $this->db->update("user", $inputuser, $where);
+
+            $inputuser = [
+                'user_token' => $token
+            ];
+
+            $this->db->table('user')
+                ->where('user_id', $id)
+                ->update($inputuser);
         } else {
-            $inputuser["member_token"] = $this->input->get("token");
-            $where["member_id"] = $this->input->get("id");
-            $this->db->update("member", $inputuser, $where);
+
+            $inputuser = [
+                'member_token' => $token
+            ];
+
+            $this->db->table('member')
+                ->where('member_id', $id)
+                ->update($inputuser);
         }
-        echo $this->input->get("tipe");
+
+        return $this->response->setBody($tipe);
     }
 
     public function login()
     {
-        header("Access-Control-Allow-Origin: *");
-        header("Content-Type: application/json");
+        $this->response->setHeader('Access-Control-Allow-Origin', '*');
+        $this->response->setContentType('application/json');
 
-        // CI3 pakai input->get()
-        $username = $this->input->get("username");
-        $passwordInput = $this->input->get("password");
+        $username = $this->request->getGet('username');
+        $passwordInput = $this->request->getGet('password');
 
         $response = [];
 
         if ($username && $passwordInput) {
-            $this->db->from('member');
-            $query = $this->db->get();
-            if ($query->num_rows() > 0) {
-                $member = $query->row(); // cukup ambil 1
-                $password = $member->member_password;
-                if (password_verify($passwordInput, $password)) {
+
+            // Cek tabel member berdasarkan username
+            $member = $this->db->table('member')
+                ->where('member_name', $username)
+                ->get()
+                ->getRow();
+
+            if ($member) {
+
+                if (password_verify($passwordInput, $member->member_password)) {
+
                     $response = [
-                        'tipe' => 'member',
-                        'status' => 'success',
-                        'id' => $member->member_id,
+                        'tipe'     => 'member',
+                        'status'   => 'success',
+                        'id'       => $member->member_id,
                         'username' => $member->member_name,
-                        'token' => $member->member_token,
-                        'message' => 'Login Berhasil!',
-                        'password' => $passwordInput // ⚠️ jangan dipakai di production
+                        'token'    => $member->member_token,
+                        'message'  => 'Login Berhasil!'
                     ];
                 } else {
 
                     $response = [
-                        'status' => 'fail',
+                        'status'  => 'fail',
                         'message' => 'Password Salah!'
                     ];
                 }
             } else {
-                $this->db->from('user');
-                $query = $this->db->get();
-                if ($query->num_rows() > 0) {
-                    $user = $query->row(); // cukup ambil 1
-                    $password = $user->user_password;
-                    if (password_verify($passwordInput, $password)) {
+
+                // Jika bukan member, cek tabel user
+                $user = $this->db->table('user')
+                    ->where('user_name', $username)
+                    ->get()
+                    ->getRow();
+
+                if ($user) {
+
+                    if (password_verify($passwordInput, $user->user_password)) {
+
                         $response = [
-                            'tipe' => 'user',
-                            'status' => 'success',
-                            'id' => $user->user_id,
+                            'tipe'     => 'user',
+                            'status'   => 'success',
+                            'id'       => $user->user_id,
                             'username' => $user->user_name,
-                            'token' => $user->user_token,
-                            'message' => 'Login Berhasil!',
-                            'password' => $passwordInput // ⚠️ jangan dipakai di production
+                            'token'    => $user->user_token,
+                            'message'  => 'Login Berhasil!'
                         ];
                     } else {
 
                         $response = [
-                            'status' => 'fail',
+                            'status'  => 'fail',
                             'message' => 'Password Salah!'
                         ];
                     }
                 } else {
 
                     $response = [
-                        'status' => 'fail',
+                        'status'  => 'fail',
                         'message' => 'username/NIK Salah!'
                     ];
                 }
@@ -102,12 +123,12 @@ class api extends baseController
         } else {
 
             $response = [
-                'status' => 'fail',
+                'status'  => 'fail',
                 'message' => 'Login Tidak Valid!'
             ];
         }
 
-        echo json_encode($response);
+        return $this->response->setJSON($response);
     }
 
     public function active()
