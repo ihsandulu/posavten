@@ -62,7 +62,7 @@ class api extends baseController
 
             // Cek tabel member berdasarkan username
             $member = $this->db->table('member')
-                ->where('member_name', $username)
+                ->where('member_email', $username)
                 ->get()
                 ->getRow();
 
@@ -89,7 +89,7 @@ class api extends baseController
 
                 // Jika bukan member, cek tabel user
                 $user = $this->db->table('user')
-                    ->where('user_name', $username)
+                    ->where('user_email', $username)
                     ->get()
                     ->getRow();
 
