@@ -48,6 +48,79 @@ class api extends baseController
         return $this->response->setBody($tipe);
     }
 
+    public function register()
+    {
+        $this->response->setHeader('Access-Control-Allow-Origin', '*');
+        $this->response->setContentType('application/json');
+
+        $username = $this->request->getGet('username');
+        $passwordInput = $this->request->getGet('password');
+
+        $response = [];
+
+        if ($username && $passwordInput) {
+
+            // Cek tabel member berdasarkan username
+            $member = $this->db->table('member')
+                ->where('member_email', $username)
+                ->get()
+                ->getRow();
+
+            if ($member) {
+                $response = [
+                    'status'  => 'fail',
+                    'message' => 'Member sudah terdaftar!'
+                ];
+            } else {
+
+                $inputu = [];
+
+                foreach ($this->request->getGet() as $e => $f) {
+                    if ($e != 'create') {
+                        $inputu[$e] = $f;
+                    }
+                }
+
+                // Member
+                $inputu["store_id"] = 1;
+                $inputu["member_password"] = password_hash(
+                    $inputu["member_password"],
+                    PASSWORD_DEFAULT
+                );
+                
+                $inputu["member_no"] = "M".date("ymdHis");
+                $inputu["positionm_id"] = 8;
+
+                $this->db->table('member')->insert($inputu);
+
+                $memberId = $this->db->insertID();
+
+                // Ambil data member yang baru disimpan
+                $member = $this->db->table('member')
+                    ->where('member_id', $memberId)
+                    ->get()
+                    ->getRow();
+
+                $response = [
+                    'tipe'     => 'member',
+                    'status'   => 'success',
+                    'id'       => $member->member_id,
+                    'username' => $member->member_name,
+                    'token'    => $member->member_token,
+                    'message'  => 'Login Berhasil!'
+                ];
+            }
+        } else {
+
+            $response = [
+                'status'  => 'fail',
+                'message' => 'Login Tidak Valid!'
+            ];
+        }
+
+        return $this->response->setJSON($response);
+    }
+
     public function login()
     {
         $this->response->setHeader('Access-Control-Allow-Origin', '*');
