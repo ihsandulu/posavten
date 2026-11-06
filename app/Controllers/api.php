@@ -106,14 +106,14 @@ class api extends baseController
                     'username' => $member->member_name,
                     'email'    => $member->member_email,
                     'token'    => $member->member_token,
-                    'message'  => 'Login Berhasil!'
+                    'message'  => 'Register Berhasil!'
                 ];
             }
         } else {
 
             $response = [
                 'status'  => 'fail',
-                'message' => 'Login Tidak Valid!'
+                'message' => 'Register Tidak Valid!'
             ];
         }
 
