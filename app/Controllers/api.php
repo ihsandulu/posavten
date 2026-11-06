@@ -59,6 +59,15 @@ class api extends baseController
 
         $response = [];
 
+        $email = $this->request->getGet('email');
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Format email tidak valid!'
+            ]);
+        }
+
         if ($username && $passwordInput && $email) {
 
             // Cek tabel member berdasarkan username
@@ -85,8 +94,8 @@ class api extends baseController
                     $passwordInput,
                     PASSWORD_DEFAULT
                 );
-                
-                $inputu["member_no"] = "M".date("ymdHis");
+
+                $inputu["member_no"] = "M" . date("ymdHis");
                 $inputu["positionm_id"] = 8;
 
                 $this->db->table('member')->insert($inputu);
