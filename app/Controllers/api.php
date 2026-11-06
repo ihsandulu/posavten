@@ -48,6 +48,44 @@ class api extends baseController
         return $this->response->setBody($tipe);
     }
 
+    public function listproductandroid()
+    {
+
+        $builder = $this->db->table("product")
+            ->join("(SELECT sell_percent, sell_price, positionm_id, product_id AS prodid FROM sell)sell", "sell.prodid=product.product_id AND sell.positionm_id=9", "left");
+        if ($this->request->getGet("product_name") != "") {
+            $builder->like("product.product_name", $this->request->getGet("product_name"), "BOTH");
+        }
+        $builder->where("product.store_id", 1);
+        $product = $builder->orderBy("product_name")
+            ->get();
+        // echo $this->db->getLastQuery();
+        foreach ($product->getResult() as $product) {
+            if ($product->product_picture == "") {
+                $gambar = "no_image.png";
+            } else {
+                $gambar = $product->product_picture;
+            }
+            $sell = $product->sell_price;
+            if ($sell == "") {
+                $sell = 0;
+            }
+?>
+            <div class="col-4" onclick="pilihproduk('<?= $product->product_id; ?>')">
+                <div class="card border h-100">
+                    <img src="<?= base_url("images/product_picture/" . $gambar); ?>" class="card-img-top"
+                        style="aspect-ratio:1/1;object-fit:cover">
+                    <div class="card-body p-2">
+                        <div class="small fw-bold"><?= $product->product_name; ?></div>
+                        <div class="small text-success"><?= number_format($sell, 0, ",", "."); ?></div>
+                        <input type="checkbox" class="form-check-input mt-2" name="gambar[]"
+                            value="1">
+                    </div>
+                </div>
+            </div>
+        <?php }
+    }
+
     public function register()
     {
         $this->response->setHeader('Access-Control-Allow-Origin', '*');
@@ -252,7 +290,7 @@ class api extends baseController
     public function unitsecond()
     {
         $transactiond_unit = $this->request->getGet("transactiond_unit");
-?>
+        ?>
         <option value="0" <?= ($transactiond_unit == "0") ? "selected" : ""; ?>>Unit</option>
         <?php
         $unit = $this->db->table("unit")
