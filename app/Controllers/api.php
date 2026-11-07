@@ -72,15 +72,26 @@ class api extends baseController
             }
 ?>
             <div class="col-4" onclick="pilihproduk('<?= $product->product_id; ?>')">
-                <div class="card border h-100">
-                    <img src="<?= base_url("images/product_picture/" . $gambar); ?>" class="card-img-top"
+                <div class="card border h-100 position-relative overflow-hidden">
+
+                    <img src="<?= base_url("images/product_picture/" . $gambar); ?>"
+                        class="card-img-top"
                         style="aspect-ratio:1/1;object-fit:cover">
-                    <div class="card-body p-2">
-                        <div class="small fw-bold"><?= $product->product_name; ?></div>
-                        <div class="small text-success"><?= number_format($sell, 0, ",", "."); ?></div>
-                        <input type="checkbox" class="form-check-input mt-2" name="gambar[]"
-                            value="1">
+
+                    <!-- NAMA DAN HARGA DI TENGAH GAMBAR -->
+                    <div class="position-absolute top-50 start-50 translate-middle text-center w-100 px-1"
+                        style="background:rgba(255,255,255,0.90); padding:8px 4px;">
+
+                        <div class="small fw-bold text-dark">
+                            <?= $product->product_name; ?>
+                        </div>
+
+                        <div class="small fw-bold text-dark">
+                            Rp <?= number_format($sell, 0, ",", "."); ?>
+                        </div>
+
                     </div>
+
                 </div>
             </div>
         <?php }
