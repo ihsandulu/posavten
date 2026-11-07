@@ -48,6 +48,18 @@ class api extends baseController
         return $this->response->setBody($tipe);
     }
 
+    public function simpanpesanan()
+    {
+        $input["member_id"] = $this->request->getGet("member_id");
+        $input["pesanan_nopesanan"] = $this->request->getGet("pesanan_nopesanan");
+        $input["product_id"] = $this->request->getGet("product_id");
+        if ($this->db->table('pesanan')->insert($input)) {
+            echo "insert";
+        } else {
+            echo "gagal";
+        }
+    }
+
     public function listproductandroid()
     {
 
