@@ -71,7 +71,10 @@ class api extends baseController
                 $sell = 0;
             }
 ?>
-            <div class="col-4" onclick="pilihproduk('<?= $product->product_id; ?>')">
+            <div class="col-4"
+                data-id="<?= esc($product->product_id); ?>"
+                data-nama="<?= esc($product->product_name); ?>"
+                onclick="pilihproduk(this)">
                 <div class="card border h-100 position-relative overflow-hidden">
 
                     <img src="<?= base_url("images/product_picture/" . $gambar); ?>"
