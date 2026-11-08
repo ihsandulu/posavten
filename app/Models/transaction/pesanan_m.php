@@ -121,7 +121,7 @@ class pesanan_m extends core_m
     // =====================================================
     // 2. MENGIRIM PESAN KE FIREBASE CLOUD MESSAGING
     // =====================================================
-    private function sendFcm($accessToken, $projectId, $deviceToken, $message)
+    private function sendFcm($accessToken, $projectId, $deviceToken, $message, $pesanasli)
     {
         if (empty($deviceToken)) {
             return [
@@ -140,7 +140,7 @@ class pesanan_m extends core_m
 
                 'notification' => [
                     'title' => 'Notifikasi POSAVTEN',
-                    'body'  => (string) $message
+                    'body'  => (string) $pesanasli
                 ],
 
                 'data' => [
@@ -324,7 +324,8 @@ class pesanan_m extends core_m
                                 $fcm['access_token'],
                                 $fcm['project_id'],
                                 $token,
-                                $message
+                                $message,
+                                $pesan
                             );
 
                             if ($hasil['success']) {

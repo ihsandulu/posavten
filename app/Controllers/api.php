@@ -134,7 +134,7 @@ class api extends baseController
     // =====================================================
     // 2. MENGIRIM PESAN KE FIREBASE CLOUD MESSAGING
     // =====================================================
-    private function sendFcm($accessToken, $projectId, $deviceToken, $message)
+    private function sendFcm($accessToken, $projectId, $deviceToken, $message, $pesanasli)
     {
         if (empty($deviceToken)) {
             return [
@@ -153,7 +153,7 @@ class api extends baseController
 
                 'notification' => [
                     'title' => 'Notifikasi POSAVTEN',
-                    'body'  => (string) $message
+                    'body'  => (string) $pesanasli
                 ],
 
                 'data' => [
@@ -300,7 +300,8 @@ class api extends baseController
                         $accessToken,
                         $projectId,
                         $token,
-                        $message
+                        $message,
+                        $pesan
                     );
 
                     if ($hasil['success']) {
