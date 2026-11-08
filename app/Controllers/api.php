@@ -60,7 +60,8 @@ class api extends baseController
             echo "gagal";
         }
     }
-    function kirimnotif()
+    
+    public function kirimnotif()
     {
         $tipe = $this->input->get("tipe"); //meMber,user
         if ($tipe == "user") {
