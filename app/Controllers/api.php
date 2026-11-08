@@ -100,7 +100,7 @@ class api extends baseController
                 $this->db->table("pesan")->insert($inputpesan);
                 $pesan_id = $this->db->insertID();
 
-                
+
 
                 $message = $code . '|' . $pesan_id . '|' . $email . '|' . $tipe . '|' . $pesan . '|' . $token;
 
@@ -109,12 +109,12 @@ class api extends baseController
                 $response = @file_get_contents($url);
 
                 if ($response === false) {
-                    $notifkeuser=0;
-                }else{
-                    $notifkeuser=1;
+                    $notifkeuser = 0;
+                } else {
+                    $notifkeuser = 1;
                 }
 
-                 return $this->response->setJSON([
+                return $this->response->setJSON([
                     'status'  => 'success',
                     'message' => 'Pesanan diproses.',
                     'notifkeuser' => $notifkeuser
@@ -300,14 +300,14 @@ class api extends baseController
         $this->response->setHeader('Access-Control-Allow-Origin', '*');
         $this->response->setContentType('application/json');
 
-        $username = $this->request->getGet('username');
+        $username      = $this->request->getGet('username');
         $passwordInput = $this->request->getGet('password');
 
         $response = [];
 
         if ($username && $passwordInput) {
 
-            // Cek tabel member berdasarkan username
+            // Cek tabel member
             $member = $this->db->table('member')
                 ->where('member_email', $username)
                 ->get()
@@ -379,7 +379,6 @@ class api extends baseController
 
         return $this->response->setJSON($response);
     }
-
     public function active()
     {
         $input["store_active"] = $this->request->getGET("store_active");
