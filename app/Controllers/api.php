@@ -153,7 +153,7 @@ class api extends baseController
 
                 'notification' => [
                     'title' => 'Notifikasi POSAVTEN',
-                    'body'  => 'Anda memiliki pesan baru.'
+                    'body'  => (string) $message
                 ],
 
                 'data' => [
