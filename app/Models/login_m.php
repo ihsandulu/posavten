@@ -27,15 +27,15 @@ class login_m extends core_m
             $user1 = $builder
                 ->get();
 
-                
-         
+
+
             // define('production',$this->db->database);
             // echo production;
             // $lastquery = $this->db->getLastQuery();
             // echo $lastquery;
             // die;
-        //    $query = $this->db->query("SELECT * FROM `user`  WHERE `user_email` = 'ihsan.dulu@gmail.com'");
-        //     echo $query->getFieldCount();
+            //    $query = $this->db->query("SELECT * FROM `user`  WHERE `user_email` = 'ihsan.dulu@gmail.com'");
+            //     echo $query->getFieldCount();
             // die;
 
             $halaman = array();
@@ -59,12 +59,19 @@ class login_m extends core_m
                         $this->session->set("store_member", $user->store_member);
                         $this->session->set("store_akun", $user->store_akun);
 
-                         //tambahkan modul di sini                         
+                        $input["user_id"] = $user->user_id;
+                        $builder = $this->db->table('login');
+                        $builder->insert($input);
+                        /* echo $this->db->getLastQuery();
+            die; */
+                        $account_id = $this->db->insertID();
+
+                        //tambahkan modul di sini                         
                         $pages = $this->db->table("positionpages")
-                        ->join("pages","pages.pages_id=positionpages.pages_id","left")
-                        ->where("position_id", $user->position_id)
-                        ->get();
-                       foreach ($pages->getResult() as $pages) {
+                            ->join("pages", "pages.pages_id=positionpages.pages_id", "left")
+                            ->where("position_id", $user->position_id)
+                            ->get();
+                        foreach ($pages->getResult() as $pages) {
                             // $halaman = array(109, 110, 111, 112, 116, 117, 118, 119, 120, 121, 122, 123, 159, 173,187,188,189,190,192,196);
                             $halaman[$pages->pages_id]['act_read'] = $pages->positionpages_read;
                             $halaman[$pages->pages_id]['act_create'] = $pages->positionpages_create;
@@ -73,7 +80,7 @@ class login_m extends core_m
                             $halaman[$pages->pages_id]['act_approve'] = $pages->positionpages_approve;
                         }
                         $this->session->set("halaman", $halaman);
-                       
+
                         $data["hasil"] = " Selamat Datang  " . $user->user_name;
                         $this->session->setFlashdata('hasil', $data["hasil"]);
                         $data['masuk'] = 1;

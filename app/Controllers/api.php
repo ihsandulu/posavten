@@ -68,7 +68,7 @@ class api extends baseController
         $pesan = $this->request->getGet("pesan");
 
         if ($tipe == "user") {
-
+            echo "kirim notif ke user";
             // MULAI KIRIM PESAN KE USER
             $login = $this->db->table("login")
                 ->select("user.user_token, user.user_email")
