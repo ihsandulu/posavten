@@ -330,7 +330,7 @@ class api extends baseController
 
                     $response = [
                         'status'  => 'fail',
-                        'message' => 'Password Salah!'
+                        'message' => 'Password Member Salah!'
                     ];
                 }
             } else {
@@ -358,7 +358,7 @@ class api extends baseController
 
                         $response = [
                             'status'  => 'fail',
-                            'message' => 'Password Salah!'
+                            'message' => 'Password User Salah!'
                         ];
                     }
                 } else {
