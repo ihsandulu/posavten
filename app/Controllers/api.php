@@ -59,7 +59,75 @@ class api extends baseController
             echo "gagal";
         }
     }
+    function kirimnotif()
+    {
+        $tipe = $this->input->get("tipe"); //meMber,user
+        if ($tipe == "user") {
+            //MULAI KIRIM PESAN KE USER
+            $login = $this->db
+                ->join("user", "user.user_id=login.user_id", "left")
+                ->where("login_status", 0)
+                ->where("login_date", date("Y-m-d"))
+                ->get("login");
+            foreach ($login->result() as $login) {
+                $token = $login->user_token;
+                $email = $login->user_email;
+                $code = $this->input->get("code");
+                $pesan = $this->input->get("pesan");
 
+                $inputpesan["pesan_email"] = $email;
+                $inputpesan["pesan_code"] = $code;
+                $inputpesan["pesan_tipe"] = $tipe;
+                $inputpesan["pesan_isi"] = $pesan;
+                $inputpesan["pesan_token"] = $token;
+                $this->db->insert("pesan", $inputpesan);
+                $pesan_id = $this->db->insert_id();
+                $pesan_code = $code;
+
+                $message = $pesan_code . '|' . $pesan_id . '|' . $email . '|' . $tipe . '|' . $pesan . '|' . $token;
+                $url = "https://qithy.my.id:8000/broadcast/TRP-20241010-01?kirim=&message=" . urlencode($message);
+                $data["urlbroadcast"] = urldecode($url);
+                $response = @file_get_contents($url);
+                echo $response;
+                if ($response === false) {
+                    error_log("Gagal kirim notif");
+                    return false;
+                }
+            }
+        }
+
+        if ($tipe == "member") {
+            $member_id = $this->input->get("id");
+            $member = $this->db
+                ->where("member_id", member_id)
+                ->get("member");
+            foreach ($member->result() as $member) {
+                $email = $login->member_email;
+                $token = $login->member_token;
+                $pesan = $this->input->get("pesan");
+                $code = $this->input->get("code");
+
+                $inputpesan["pesan_email"] = $email;
+                $inputpesan["pesan_code"] = $code;
+                $inputpesan["pesan_tipe"] = $tipe;
+                $inputpesan["pesan_isi"] = $pesan;
+                $inputpesan["pesan_token"] = $token;
+                $this->db->insert("pesan", $inputpesan);
+                $pesan_id = $this->db->insert_id();
+                $pesan_code = $code;
+
+                $message = $pesan_code . '|' . $pesan_id . '|' . $email . '|' . $tipe . '|' . $pesan . '|' . $token;
+                $url = "https://qithy.my.id:8000/broadcast/TRP-20241010-01?kirim=&message=" . urlencode($message);
+                $data["urlbroadcast"] = urldecode($url);
+                $response = @file_get_contents($url);
+                echo $response;
+                if ($response === false) {
+                    error_log("Gagal kirim notif");
+                    return false;
+                }
+            }
+        }
+    }
     public function listproductandroid()
     {
 
