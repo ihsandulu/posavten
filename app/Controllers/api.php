@@ -248,61 +248,40 @@ class api extends baseController
             ->join("member", "member.member_id=pesanan.member_id", "left")
             ->where("pesanan.store_id", session()->get("store_id"))
             ->where("pesanan.pesanan_accept", 0);
-        if (isset($_GET["from"]) && $_GET["from"] != "") {
-            $builder->where("pesanan.pesanan_date >=", $this->request->getGet("from"));
+
+        if ($this->request->getGet("from")) {
+            $builder->where(
+                "pesanan.pesanan_date >=",
+                $this->request->getGet("from")
+            );
         } else {
             $builder->where("pesanan.pesanan_date", date("Y-m-d"));
         }
-        if (isset($_GET["to"]) && $_GET["to"] != "") {
-            $builder->where("pesanan.pesanan_date <=", $this->request->getGet("to"));
+
+        if ($this->request->getGet("to")) {
+            $builder->where(
+                "pesanan.pesanan_date <=",
+                $this->request->getGet("to")
+            );
         } else {
             $builder->where("pesanan.pesanan_date", date("Y-m-d"));
         }
-        $usr = $builder
+
+        $rows = $builder
             ->orderBy("pesanan.pesanan_accept", "ASC")
             ->orderBy("pesanan.pesanan_id", "DESC")
-            ->get();
-        // echo $this->db->getLastquery();die;
-        $no = 1;
-        $status = array("Proses", "Selesai");
-        foreach ($usr->getResult() as $usr) {
+            ->get()
+            ->getResult();
+
+        foreach ($rows as $row) {
 ?>
             <div class="card mb-3 border shadow-sm">
                 <div class="card-body">
-
-                    <div class="d-flex justify-content-between">
-                        <strong>Pesanan #123</strong>
-                        <span class="badge bg-warning text-dark">
-                            Menunggu
-                        </span>
-                    </div>
-
-                    <hr>
-
-                    <div class="mb-2">
-                        <small class="text-muted">Nama Pemesan</small>
-                        <div class="fw-bold">Ihsan</div>
-                    </div>
-
-                    <div class="mb-3">
-                        <small class="text-muted">Alamat Pengantaran</small>
-                        <div>
-                            Jl. Contoh No. 10, Sawangan, Depok
-                        </div>
-                    </div>
-
-                    <button type="button"
-                        class="btn btn-success w-100 btnSelesaikan"
-                        data-id="123">
-
-                        <i class="fas fa-check-circle me-2"></i>
-                        Selesaikan
-
-                    </button>
-
+                    <strong>Pesanan #123</strong>
                 </div>
             </div>
-        <?php }
+        <?php
+        }
     }
 
 
