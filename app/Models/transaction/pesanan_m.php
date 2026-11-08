@@ -101,13 +101,13 @@ class pesanan_m extends core_m
 
                 $url = "https://qithy.my.id:8000/broadcast/TRP-20241010-01?kirim=&message=" . urlencode($message);
 
-                $response = @file_get_contents($url);
+                $data["message"] = @file_get_contents($url);
 
-                echo $response;
+                // echo $response;
 
-                if ($response === false) {
-                    error_log("Gagal kirim notif");
-                    return false;
+                if ($data["message"] === false) {
+                    $data["message"] = "Gagal kirim notif";
+
                 }
             }
         }
