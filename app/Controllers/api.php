@@ -303,6 +303,27 @@ class api extends baseController
         <?php }
     }
 
+    public function selesaikanpesanan()
+    {
+        $pesanan_id = $this->request->getGet("pesanan_id");
+
+        if (!$pesanan_id) {
+            return $this->response->setStatusCode(400)
+                ->setJSON(["status" => "error"]);
+        }
+
+        $this->db->table("pesanan")
+            ->where("pesanan_id", $pesanan_id)
+            ->where("store_id", 1)
+            ->update([
+                "pesanan_accept" => 1
+            ]);
+
+        return $this->response->setJSON([
+            "status" => "success"
+        ]);
+    }
+
 
     public function kirimnotif()
     {
