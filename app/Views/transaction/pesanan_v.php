@@ -224,6 +224,7 @@
 
                                                         <input type="hidden" name="pesanan_accept" value="1">
                                                         <input type="hidden" name="pesanan_id" value="<?= $usr->pesanan_id; ?>">
+                                                        <input type="hidden" name="member_id" value="<?= $usr->member_id; ?>">
 
                                                         <span class="badge badge-warning px-3 py-2">
                                                             <i class="fa fa-clock-o"></i> Proses

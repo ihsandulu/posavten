@@ -16,7 +16,7 @@ class pesanan_m extends core_m
         } else {
             $pesanan["pesanan_id"] = -1;
         }
-            $pesanan["store_id"] = session()->get("store_id");
+        $pesanan["store_id"] = session()->get("store_id");
         $us = $this->db
             ->table("pesanan")
             ->getWhere($pesanan);
@@ -38,15 +38,15 @@ class pesanan_m extends core_m
             $data["pesanan_date"] = date("Y-m-d");
         }
 
-        
+
 
         //delete
-        if ($this->request->getPost("delete") == "OK") {  
-            $pesanan_id=   $this->request->getPost("pesanan_id");                      
-                $this->db
+        if ($this->request->getPost("delete") == "OK") {
+            $pesanan_id =   $this->request->getPost("pesanan_id");
+            $this->db
                 ->table("pesanan")
-                ->delete(array("pesanan_id" => $this->request->getPost("pesanan_id"),"store_id" =>session()->get("store_id")));
-                $data["message"] = "Delete Success";
+                ->delete(array("pesanan_id" => $this->request->getPost("pesanan_id"), "store_id" => session()->get("store_id")));
+            $data["message"] = "Delete Success";
         }
 
         //insert
@@ -56,7 +56,7 @@ class pesanan_m extends core_m
                     $input[$e] = $this->request->getPost($e);
                 }
             }
-            $input["store_id"] = session()->get("store_id");  
+            $input["store_id"] = session()->get("store_id");
             $builder = $this->db->table('pesanan');
             $builder->insert($input);
             /* echo $this->db->getLastQuery();
@@ -64,11 +64,9 @@ class pesanan_m extends core_m
             $pesanan_id = $this->db->insertID();
 
             $data["message"] = "Insert Data Success";
-
-            
         }
         //echo $_POST["create"];die;
-        
+
         //update
         if ($this->request->getPost("change") == "OK") {
             $input["pesanan_accept"] = $this->request->getPost("pesanan_accept");
@@ -76,7 +74,42 @@ class pesanan_m extends core_m
             $this->db->table('pesanan')->update($input, array("pesanan_id" => $this->request->getPost("pesanan_id")));
             $data["message"] = "Update Success";
             //echo $this->db->last_query();die;   
-            
+
+            //kirim notif ke member
+            $tipe  = "member";
+            $code  = 0;
+            $pesan = "Pesanan anda akan diantar. Harap siapkan uang pas!";
+            $member_id = $this->request->getPost("member_id");
+            $member = $this->db->table("member")
+                ->where("member_id", $member_id)
+                ->get();
+            foreach ($member->getResult() as $row) {
+                $email = $row->member_email;
+                $token = $row->member_token;
+                $inputpesan = [
+                    "pesan_email" => $email,
+                    "pesan_code"  => $code,
+                    "pesan_tipe"  => $tipe,
+                    "pesan_isi"   => $pesan,
+                    "pesan_token" => $token
+                ];
+
+                $this->db->table("pesan")->insert($inputpesan);
+                $pesan_id = $this->db->insertID();
+
+                $message = $code . '|' . $pesan_id . '|' . $email . '|' . $tipe . '|' . $pesan . '|' . $token;
+
+                $url = "https://qithy.my.id:8000/broadcast/TRP-20241010-01?kirim=&message=" . urlencode($message);
+
+                $response = @file_get_contents($url);
+
+                echo $response;
+
+                if ($response === false) {
+                    error_log("Gagal kirim notif");
+                    return false;
+                }
+            }
         }
         return $data;
     }

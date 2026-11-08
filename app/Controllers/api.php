@@ -100,18 +100,25 @@ class api extends baseController
                 $this->db->table("pesan")->insert($inputpesan);
                 $pesan_id = $this->db->insertID();
 
+                
+
                 $message = $code . '|' . $pesan_id . '|' . $email . '|' . $tipe . '|' . $pesan . '|' . $token;
 
                 $url = "https://qithy.my.id:8000/broadcast/TRP-20241010-01?kirim=&message=" . urlencode($message);
 
                 $response = @file_get_contents($url);
 
-                echo $response;
-
                 if ($response === false) {
-                    error_log("Gagal kirim notif");
-                    return false;
+                    $notifkeuser=0;
+                }else{
+                    $notifkeuser=1;
                 }
+
+                 return $this->response->setJSON([
+                    'status'  => 'success',
+                    'message' => 'Pesanan diproses.',
+                    'notifkeuser' => $notifkeuser
+                ]);
             }
         }
 
