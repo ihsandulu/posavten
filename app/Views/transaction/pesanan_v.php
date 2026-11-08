@@ -214,19 +214,30 @@
                                     ?>
                                         <tr>
                                             <td><?= $no++; ?></td>
-                                            <td>
+                                            <td class="text-center align-middle">
                                                 <?php if ($usr->pesanan_accept == 0) { ?>
                                                     <form action="<?= base_url('pesanan'); ?>" method="post"
-                                                        onsubmit="return confirm('Yakin pesanan ini sudah selesai?')">
+                                                        onsubmit="return confirm('Yakin pesanan ini sudah selesai?')"
+                                                        class="d-inline-flex align-items-center" style="gap: 10px;">
+
                                                         <?= csrf_field(); ?>
+
                                                         <input type="hidden" name="pesanan_accept" value="1">
                                                         <input type="hidden" name="pesanan_id" value="<?= $usr->pesanan_id; ?>">
-                                                        <button type="submit" class="btn btn-success btn-sm" name="change" value="OK">
-                                                            Selesai
+
+                                                        <span class="badge badge-warning px-3 py-2">
+                                                            <i class="fa fa-clock-o"></i> Proses
+                                                        </span>
+
+                                                        <button type="submit" class="btn btn-success btn-sm rounded-pill px-3"
+                                                            name="change" value="OK">
+                                                            <i class="fa fa-check-circle"></i> Selesaikan
                                                         </button>
                                                     </form>
                                                 <?php } else { ?>
-                                                    <span class="badge badge-success">Selesai</span>
+                                                    <span class="badge badge-success px-3 py-2">
+                                                        <i class="fa fa-check-circle"></i> Selesai
+                                                    </span>
                                                 <?php } ?>
                                             </td>
                                             <td><?= $usr->pesanan_date; ?></td>
