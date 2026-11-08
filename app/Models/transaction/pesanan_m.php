@@ -71,11 +71,7 @@ class pesanan_m extends core_m
         
         //update
         if ($this->request->getPost("change") == "OK") {
-            foreach ($this->request->getPost() as $e => $f) {
-                if ($e != 'change' && $e != 'pesanan_picture') {
-                    $input[$e] = $this->request->getPost($e);
-                }
-            }
+            $input["pesanan_accept"] = $this->request->getPost("pesanan_accept");
             $input["store_id"] = session()->get("store_id");
             $this->db->table('pesanan')->update($input, array("pesanan_id" => $this->request->getPost("pesanan_id")));
             $data["message"] = "Update Success";
