@@ -293,13 +293,11 @@ class api extends baseController
 
                     <button type="button"
                         class="btn btn-success w-100 btnSelesaikan"
-                        data-id="123">
+                        data-id="<?= esc($row->pesanan_id); ?>">
 
                         <i class="fas fa-check-circle me-2"></i>
                         Selesaikan
-
                     </button>
-
                 </div>
             </div>
         <?php }
