@@ -53,6 +53,7 @@ class api extends baseController
         $input["member_id"] = $this->request->getGet("member_id");
         $input["pesanan_nopesanan"] = $this->request->getGet("pesanan_nopesanan");
         $input["product_id"] = $this->request->getGet("product_id");
+        $input["pesanan_alamat"] = $this->request->getGet("pesanan_alamat");
         if ($this->db->table('pesanan')->insert($input)) {
             echo "insert";
         } else {
