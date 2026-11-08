@@ -243,24 +243,28 @@ class api extends baseController
 
     public function listpesananandroid()
     {
-        
+
         $this->response->setHeader('Access-Control-Allow-Origin', '*');
-        $this->response->setContentType('application/json');
+        $this->response->setContentType('text/html');
+
         $builder = $this->db
             ->table("pesanan")
-            ->join("member", "member.member_id=pesanan.member_id", "left")
+            ->join("member", "member.member_id=pesanan.member_id", "inner")
             ->where("pesanan.store_id", session()->get("store_id"))
             ->where("pesanan.pesanan_accept", 0);
+
         if (isset($_GET["from"]) && $_GET["from"] != "") {
             $builder->where("pesanan.pesanan_date >=", $this->request->getGet("from"));
         } else {
             $builder->where("pesanan.pesanan_date", date("Y-m-d"));
         }
+
         if (isset($_GET["to"]) && $_GET["to"] != "") {
             $builder->where("pesanan.pesanan_date <=", $this->request->getGet("to"));
         } else {
             $builder->where("pesanan.pesanan_date", date("Y-m-d"));
         }
+
         $usr = $builder
             ->orderBy("pesanan.pesanan_accept", "ASC")
             ->orderBy("pesanan.pesanan_id", "DESC")
@@ -459,7 +463,7 @@ class api extends baseController
 
     public function listproductandroid()
     {
-        
+
         $this->response->setHeader('Access-Control-Allow-Origin', '*');
         $this->response->setContentType('application/json');
 
