@@ -21,9 +21,14 @@ class utama extends baseController
 
     public function logout()
     {
+        $input["login_status"] = 1;
+        $this->db->table('login')->update($input, array("user_id" => session()->get("user_id")));
+
         $this->session->destroy();
         $this->session->setFlashdata("message", "Silahkan Login !");
         return redirect()->to(base_url());
+
+        
     }
 
     public function login()
@@ -31,9 +36,9 @@ class utama extends baseController
         $data = new \App\Models\login_m();
         $data = $data->index();
         if ($data['masuk'] == 1) {
-            if(session()->get("position_administrator")==1||session()->get("position_administrator")==2){
+            if (session()->get("position_administrator") == 1 || session()->get("position_administrator") == 2) {
                 return redirect()->to(base_url('?message=' . $data["hasil"]));
-            }else{
+            } else {
                 return redirect()->to(base_url('transaction?message=' . $data["hasil"]));
             }
         }
