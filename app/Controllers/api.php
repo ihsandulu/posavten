@@ -281,7 +281,7 @@ class api extends baseController
 
                     <div class="mb-2">
                         <small class="text-muted">Nama Pemesan</small>
-                        <div class="fw-bold"><?= $usr->member_nama; ?></div>
+                        <div class="fw-bold"><?= $usr->member_name; ?></div>
                     </div>
 
                     <div class="mb-3">
