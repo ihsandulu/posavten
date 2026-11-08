@@ -287,7 +287,7 @@ class api extends baseController
                     <div class="mb-3">
                         <small class="text-muted">Alamat Pengantaran</small>
                         <div>
-                            <?= $usr->member_alamat; ?>
+                            <?= $usr->pesanan_alamat; ?>
                         </div>
                     </div>
 
