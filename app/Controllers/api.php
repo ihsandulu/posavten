@@ -243,28 +243,21 @@ class api extends baseController
 
     public function listpesananandroid()
     {
-
-        $this->response->setHeader('Access-Control-Allow-Origin', '*');
-        $this->response->setContentType('text/html');
-
         $builder = $this->db
             ->table("pesanan")
-            ->join("member", "member.member_id=pesanan.member_id", "inner")
+            ->join("member", "member.member_id=pesanan.member_id", "left")
             ->where("pesanan.store_id", session()->get("store_id"))
             ->where("pesanan.pesanan_accept", 0);
-
         if (isset($_GET["from"]) && $_GET["from"] != "") {
             $builder->where("pesanan.pesanan_date >=", $this->request->getGet("from"));
         } else {
             $builder->where("pesanan.pesanan_date", date("Y-m-d"));
         }
-
         if (isset($_GET["to"]) && $_GET["to"] != "") {
             $builder->where("pesanan.pesanan_date <=", $this->request->getGet("to"));
         } else {
             $builder->where("pesanan.pesanan_date", date("Y-m-d"));
         }
-
         $usr = $builder
             ->orderBy("pesanan.pesanan_accept", "ASC")
             ->orderBy("pesanan.pesanan_id", "DESC")
@@ -300,7 +293,7 @@ class api extends baseController
 
                     <button type="button"
                         class="btn btn-success w-100"
-                        onclick="selesaikanpesanan(<?= $usr->pesanan_id; ?>, <?= $usr->member_id; ?>)">
+                        onclick="selesaikanpesanan(<?= $usr->pesanan_id; ?>, <?= $usr->pesanan_id; ?>)">
                         Selesaikan
                     </button>
 
@@ -309,12 +302,6 @@ class api extends baseController
         <?php }
     }
 
-    public function selesaikanpesanan()
-    {
-        $input["pesanan_accept"] = 1;
-        $this->db->table('pesanan')->update($input, array("pesanan_id" => $this->request->getGet("pesanan_id")));
-        echo $this->db->getLastQuery();
-    }
 
     public function kirimnotif()
     {
@@ -463,9 +450,6 @@ class api extends baseController
 
     public function listproductandroid()
     {
-
-        $this->response->setHeader('Access-Control-Allow-Origin', '*');
-        $this->response->setContentType('application/json');
 
         $builder = $this->db->table("product")
             ->join("(SELECT sell_percent, sell_price, positionm_id, product_id AS prodid FROM sell)sell", "sell.prodid=product.product_id AND sell.positionm_id=9", "left");
