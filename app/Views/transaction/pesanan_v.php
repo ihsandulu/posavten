@@ -96,7 +96,7 @@
                                 <div class="form-group">
                                     <label class="control-label col-sm-2" for="pesanan_resep">Status:</label>
                                     <div class="col-sm-10">
-                                        <select onchange="ipesanan()"  class="form-control select" id="pesanan_status" name="pesanan_status">
+                                        <select onchange="ipesanan()" class="form-control select" id="pesanan_status" name="pesanan_status">
                                             <option value="0" <?= ($pesanan_status == "0") ? "selected" : ""; ?>>Hadir</option>
                                             <option value="1" <?= ($pesanan_status == "1") ? "selected" : ""; ?>>Sakit</option>
                                             <option value="2" <?= ($pesanan_status == "2") ? "selected" : ""; ?>>Izin</option>
@@ -104,16 +104,19 @@
                                             <option value="4" <?= ($pesanan_status == "4") ? "selected" : ""; ?>>Alpha</option>
                                         </select>
                                     </div>
-                                <script>
-                                    function ipesanan(){
-                                        let pesanan_status = $("#pesanan_status").val();
-                                        let store_id = '<?=session()->get("store_id");?>';
-                                        $.get("<?=base_url("api/ipesanan");?>",{pesanan_status:pesanan_status,store_id:store_id})
-                                        .done(function(data){
-                                            $("#pesanan_potongan").val(data);
-                                        });
-                                    }
-                                </script>
+                                    <script>
+                                        function ipesanan() {
+                                            let pesanan_status = $("#pesanan_status").val();
+                                            let store_id = '<?= session()->get("store_id"); ?>';
+                                            $.get("<?= base_url("api/ipesanan"); ?>", {
+                                                    pesanan_status: pesanan_status,
+                                                    store_id: store_id
+                                                })
+                                                .done(function(data) {
+                                                    $("#pesanan_potongan").val(data);
+                                                });
+                                        }
+                                    </script>
 
                                 </div>
                                 <div class="form-group">
@@ -178,10 +181,10 @@
                                 <thead class="">
                                     <tr>
                                         <th>No.</th>
+                                        <th>Status</th>
                                         <th>Tanggal</th>
                                         <th>Nama</th>
                                         <th>Alamat Kirim</th>
-                                        <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -205,16 +208,30 @@
                                         ->orderBy("pesanan.pesanan_id", "DESC")
                                         ->get();
                                     // echo $this->db->getLastquery();die;
-                                    $no = 1;                                    
+                                    $no = 1;
                                     $status = array("Proses", "Selesai");
                                     foreach ($usr->getResult() as $usr) {
                                     ?>
-                                        <tr>                                            
-                                            <td><?= $no++; ?></td>        
+                                        <tr>
+                                            <td><?= $no++; ?></td>
+                                            <td>
+                                                <?php if ($usr->pesanan_accept == 0) { ?>
+                                                    <form action="<?= base_url('pesanan'); ?>" method="post"
+                                                        onsubmit="return confirm('Yakin pesanan ini sudah selesai?')">
+                                                        <?= csrf_field(); ?>
+                                                        <input type="hidden" name="pesanan_accept" value="1">
+                                                        <input type="hidden" name="pesanan_id" value="<?= $usr->pesanan_id; ?>">
+                                                        <button type="submit" class="btn btn-success btn-sm" name="change" value="OK">
+                                                            Selesai
+                                                        </button>
+                                                    </form>
+                                                <?php } else { ?>
+                                                    <span class="badge badge-success">Selesai</span>
+                                                <?php } ?>
+                                            </td>
                                             <td><?= $usr->pesanan_date; ?></td>
                                             <td><?= $usr->member_name; ?></td>
                                             <td><?= $usr->pesanan_alamat; ?></td>
-                                            <td><?= $status[$usr->pesanan_accept]; ?></td>
                                         </tr>
                                     <?php } ?>
 
