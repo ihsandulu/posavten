@@ -6,6 +6,182 @@ use App\Models\core_m;
 
 class pesanan_m extends core_m
 {
+
+    // =====================================================
+    // 1. MENGAMBIL ACCESS TOKEN DARI FIREBASE
+    // =====================================================
+    private function getFcmAccessToken()
+    {
+        $file = WRITEPATH . 'firebase/posavten-80a992b2e622.json';
+
+        if (!file_exists($file)) {
+            throw new \Exception('File Firebase tidak ditemukan: ' . $file);
+        }
+
+        $serviceAccount = json_decode(file_get_contents($file), true);
+
+        if (
+            !$serviceAccount ||
+            empty($serviceAccount['client_email']) ||
+            empty($serviceAccount['private_key']) ||
+            empty($serviceAccount['project_id'])
+        ) {
+            throw new \Exception('Isi file Service Account tidak valid.');
+        }
+
+        $now = time();
+
+        $header = [
+            'alg' => 'RS256',
+            'typ' => 'JWT'
+        ];
+
+        $payload = [
+            'iss'   => $serviceAccount['client_email'],
+            'scope' => 'https://www.googleapis.com/auth/firebase.messaging',
+            'aud'   => 'https://oauth2.googleapis.com/token',
+            'iat'   => $now,
+            'exp'   => $now + 3600
+        ];
+
+        $base64Url = function ($data) {
+            return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+        };
+
+        $jwtHeader  = $base64Url(json_encode($header));
+        $jwtPayload = $base64Url(json_encode($payload));
+
+        $signatureInput = $jwtHeader . '.' . $jwtPayload;
+
+        $privateKey = openssl_pkey_get_private(
+            $serviceAccount['private_key']
+        );
+
+        if (!$privateKey) {
+            throw new \Exception('Private key Firebase tidak valid.');
+        }
+
+        $signature = '';
+
+        $signed = openssl_sign(
+            $signatureInput,
+            $signature,
+            $privateKey,
+            OPENSSL_ALGO_SHA256
+        );
+
+        if (!$signed) {
+            throw new \Exception('Gagal membuat tanda tangan JWT.');
+        }
+
+        $jwt = $signatureInput . '.' . $base64Url($signature);
+
+        $ch = curl_init(
+            'https://oauth2.googleapis.com/token'
+        );
+
+        curl_setopt_array($ch, [
+            CURLOPT_POST           => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POSTFIELDS     => http_build_query([
+                'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+                'assertion'  => $jwt
+            ]),
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/x-www-form-urlencoded'
+            ],
+            CURLOPT_TIMEOUT => 30
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+
+        curl_close($ch);
+
+        if ($response === false) {
+            throw new \Exception('Gagal menghubungi Google: ' . $curlError);
+        }
+
+        $result = json_decode($response, true);
+
+        if ($httpCode != 200 || empty($result['access_token'])) {
+            throw new \Exception(
+                'Gagal mendapatkan access token: ' . $response
+            );
+        }
+
+        return [
+            'access_token' => $result['access_token'],
+            'project_id'   => $serviceAccount['project_id']
+        ];
+    }
+
+
+    // =====================================================
+    // 2. MENGIRIM PESAN KE FIREBASE CLOUD MESSAGING
+    // =====================================================
+    private function sendFcm($accessToken, $projectId, $deviceToken, $message)
+    {
+        if (empty($deviceToken)) {
+            return [
+                'success' => false,
+                'error' => 'Token perangkat kosong.'
+            ];
+        }
+
+        $url = 'https://fcm.googleapis.com/v1/projects/'
+            . $projectId
+            . '/messages:send';
+
+        $data = [
+            'message' => [
+                'token' => $deviceToken,
+
+                'notification' => [
+                    'title' => 'Notifikasi POSAVTEN',
+                    'body'  => 'Anda memiliki pesan baru.'
+                ],
+
+                'data' => [
+                    'message' => (string) $message
+                ]
+            ]
+        ];
+
+        $ch = curl_init($url);
+
+        curl_setopt_array($ch, [
+            CURLOPT_POST           => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POSTFIELDS     => json_encode($data),
+            CURLOPT_HTTPHEADER     => [
+                'Authorization: Bearer ' . $accessToken,
+                'Content-Type: application/json'
+            ],
+            CURLOPT_TIMEOUT => 30
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+
+        curl_close($ch);
+
+        if ($response === false) {
+            return [
+                'success' => false,
+                'error'   => $curlError
+            ];
+        }
+
+        return [
+            'success' => ($httpCode == 200),
+            'http_code' => $httpCode,
+            'response' => json_decode($response, true)
+        ];
+    }
+
     public function data()
     {
         $data = array();
@@ -40,6 +216,7 @@ class pesanan_m extends core_m
 
 
 
+
         //delete
         if ($this->request->getPost("delete") == "OK") {
             $pesanan_id =   $this->request->getPost("pesanan_id");
@@ -67,51 +244,81 @@ class pesanan_m extends core_m
         }
         //echo $_POST["create"];die;
 
-        //update
+
+        // update
         if ($this->request->getPost("change") == "OK") {
+
             $input["pesanan_accept"] = $this->request->getPost("pesanan_accept");
             $input["store_id"] = session()->get("store_id");
-            $this->db->table('pesanan')->update($input, array("pesanan_id" => $this->request->getPost("pesanan_id")));
-            $data["message"] = "Update Success";
-            //echo $this->db->last_query();die;   
 
-            //kirim notif ke member
+            $this->db->table('pesanan')->update(
+                $input,
+                array("pesanan_id" => $this->request->getPost("pesanan_id"))
+            );
+
+            $data["message"] = "Update Success";
+
+            // =========================================
+            // KIRIM NOTIFIKASI LANGSUNG KE FCM
+            // =========================================
+
             $tipe  = "member";
             $code  = 0;
             $pesan = "Pesanan anda akan diantar. Harap siapkan uang pas!";
+
             $member_id = $this->request->getPost("member_id");
+
             $member = $this->db->table("member")
                 ->where("member_id", $member_id)
                 ->get();
-            foreach ($member->getResult() as $row) {
-                $email = $row->member_email;
-                $token = $row->member_token;
-                $inputpesan = [
-                    "pesan_email" => $email,
-                    "pesan_code"  => $code,
-                    "pesan_tipe"  => $tipe,
-                    "pesan_isi"   => $pesan,
-                    "pesan_token" => $token
-                ];
 
-                $this->db->table("pesan")->insert($inputpesan);
-                $pesan_id = $this->db->insertID();
+            try {
 
-                $message = $code . '|' . $pesan_id . '|' . $email . '|' . $tipe . '|' . $pesan . '|' . $token;
+                // Ambil access token Firebase
+                $fcm = $this->getFcmAccessToken();
 
-                $url = "https://qithy.my.id:8000/broadcast/TRP-20241010-01?kirim=&message=" . urlencode($message);
+                foreach ($member->getResult() as $row) {
 
-                $data["message"] = $url;
-                // $data["message"] = @file_get_contents($url);
+                    $email = $row->member_email;
+                    $token = $row->member_token;
 
-                // echo $response;
+                    $inputpesan = [
+                        "pesan_email" => $email,
+                        "pesan_code"  => $code,
+                        "pesan_tipe"  => $tipe,
+                        "pesan_isi"   => $pesan,
+                        "pesan_token" => $token
+                    ];
 
-                if ($data["message"] === false) {
-                    $data["message"] = "Gagal kirim notif";
+                    $this->db->table("pesan")->insert($inputpesan);
+                    $pesan_id = $this->db->insertID();
 
+                    // Format pesan tetap sama dengan sistem sebelumnya
+                    $message = $code . '|' . $pesan_id . '|' . $email . '|' . $tipe . '|' . $pesan . '|' . $token;
+
+                    // Kirim langsung ke Firebase
+                    $hasil = $this->sendFcm(
+                        $fcm['access_token'],
+                        $fcm['project_id'],
+                        $token,
+                        $message
+                    );
+
+                    if ($hasil['success']) {
+                        $data["notif"] = "Berhasil mengirim notifikasi ke member.";
+                    } else {
+                        $data["notif"] = "Gagal mengirim notifikasi ke member.";
+                        log_message('error', 'FCM member gagal: ' . json_encode($hasil));
+                    }
                 }
+            } catch (\Throwable $e) {
+
+                $data["notif"] = "Gagal mengirim notifikasi: " . $e->getMessage();
+
+                log_message('error', 'FCM member: ' . $e->getMessage());
             }
         }
+
         return $data;
     }
 }
