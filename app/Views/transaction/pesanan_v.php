@@ -210,6 +210,7 @@
                                     foreach ($usr->getResult() as $usr) {
                                     ?>
                                         <tr>                                            
+                                            <td><?= $no++; ?></td>        
                                             <td><?= $usr->pesanan_date; ?></td>
                                             <td><?= $usr->member_name; ?></td>
                                             <td><?= $usr->pesanan_alamat; ?></td>
