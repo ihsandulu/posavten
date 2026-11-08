@@ -243,6 +243,9 @@ class api extends baseController
 
     public function listpesananandroid()
     {
+        
+        $this->response->setHeader('Access-Control-Allow-Origin', '*');
+        $this->response->setContentType('application/json');
         $builder = $this->db
             ->table("pesanan")
             ->join("member", "member.member_id=pesanan.member_id", "left")
@@ -456,6 +459,9 @@ class api extends baseController
 
     public function listproductandroid()
     {
+        
+        $this->response->setHeader('Access-Control-Allow-Origin', '*');
+        $this->response->setContentType('application/json');
 
         $builder = $this->db->table("product")
             ->join("(SELECT sell_percent, sell_price, positionm_id, product_id AS prodid FROM sell)sell", "sell.prodid=product.product_id AND sell.positionm_id=9", "left");
