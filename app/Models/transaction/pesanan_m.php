@@ -140,7 +140,7 @@ class pesanan_m extends core_m
 
                 'notification' => [
                     'title' => 'Notifikasi POSAVTEN',
-                    'body'  => 'Anda memiliki pesan baru.'
+                    'body'  => (string) $message
                 ],
 
                 'data' => [
