@@ -292,9 +292,12 @@ class api extends baseController
                     </div>
 
                     <button type="button"
-                        class="btn btn-success w-100"
-                        onclick="selesaikanpesanan(<?= $usr->pesanan_id; ?>, <?= $usr->pesanan_id; ?>)">
+                        class="btn btn-success w-100 btnSelesaikan"
+                        data-id="123" onclick="selesaikanpesanan(<?= $usr->pesanan_id; ?>)">
+
+                        <i class="fas fa-check-circle me-2"></i>
                         Selesaikan
+
                     </button>
 
                 </div>
