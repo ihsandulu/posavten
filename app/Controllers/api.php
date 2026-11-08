@@ -241,6 +241,46 @@ class api extends baseController
         }
     }
 
+    public function listpesananandroid()
+    { ?>
+        <div class="card mb-3 border shadow-sm">
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between">
+                    <strong>Pesanan #123</strong>
+                    <span class="badge bg-warning text-dark">
+                        Menunggu
+                    </span>
+                </div>
+
+                <hr>
+
+                <div class="mb-2">
+                    <small class="text-muted">Nama Pemesan</small>
+                    <div class="fw-bold">Ihsan</div>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-muted">Alamat Pengantaran</small>
+                    <div>
+                        Jl. Contoh No. 10, Sawangan, Depok
+                    </div>
+                </div>
+
+                <button type="button"
+                    class="btn btn-success w-100 btnSelesaikan"
+                    data-id="123">
+
+                    <i class="fas fa-check-circle me-2"></i>
+                    Selesaikan
+
+                </button>
+
+            </div>
+        </div>
+        <?php
+    }
+
 
     public function kirimnotif()
     {
@@ -409,7 +449,7 @@ class api extends baseController
             if ($sell == "") {
                 $sell = 0;
             }
-?>
+        ?>
             <div class="col-4"
                 data-id="<?= esc($product->product_id); ?>"
                 data-nama="<?= esc($product->product_name); ?>"
