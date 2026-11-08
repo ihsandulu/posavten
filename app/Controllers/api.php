@@ -68,11 +68,18 @@ class api extends baseController
         $pesan = $this->request->getGet("pesan");
 
         if ($tipe == "user") {
-            echo "kirim notif ke user";
             // MULAI KIRIM PESAN KE USER
             $login = $this->db->table("login")
                 ->select("user.user_token, user.user_email")
                 ->join("user", "user.user_id = login.user_id", "left")
+                ->join(
+                    "(SELECT user_id, MAX(login_datetime) AS last_login
+          FROM login
+          WHERE login_date = '" . date("Y-m-d") . "'
+          GROUP BY user_id) latest",
+                    "latest.user_id = login.user_id
+         AND latest.last_login = login.login_datetime"
+                )
                 ->where("login.login_status", 0)
                 ->where("login.login_date", date("Y-m-d"))
                 ->get();
