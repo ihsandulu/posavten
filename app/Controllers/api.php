@@ -271,7 +271,7 @@ class api extends baseController
                 <div class="card-body">
 
                     <div class="d-flex justify-content-between">
-                        <strong>Pesanan #123</strong>
+                        <strong>Pesanan <?= $usr->pesanan_nopesanan; ?></strong>
                         <span class="badge bg-warning text-dark">
                             Menunggu
                         </span>
@@ -281,13 +281,13 @@ class api extends baseController
 
                     <div class="mb-2">
                         <small class="text-muted">Nama Pemesan</small>
-                        <div class="fw-bold">Ihsan</div>
+                        <div class="fw-bold"><?= $usr->member_nama; ?></div>
                     </div>
 
                     <div class="mb-3">
                         <small class="text-muted">Alamat Pengantaran</small>
                         <div>
-                            Jl. Contoh No. 10, Sawangan, Depok
+                            <?= $usr->member_alamat; ?>
                         </div>
                     </div>
 
