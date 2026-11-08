@@ -60,37 +60,47 @@ class api extends baseController
             echo "gagal";
         }
     }
-    
+
     public function kirimnotif()
     {
-        $tipe = $this->input->get("tipe"); //meMber,user
+        $tipe  = $this->request->getGet("tipe");
+        $code  = $this->request->getGet("code");
+        $pesan = $this->request->getGet("pesan");
+
         if ($tipe == "user") {
-            //MULAI KIRIM PESAN KE USER
-            $login = $this->db
-                ->join("user", "user.user_id=login.user_id", "left")
-                ->where("login_status", 0)
-                ->where("login_date", date("Y-m-d"))
-                ->get("login");
-            foreach ($login->result() as $login) {
-                $token = $login->user_token;
-                $email = $login->user_email;
-                $code = $this->input->get("code");
-                $pesan = $this->input->get("pesan");
 
-                $inputpesan["pesan_email"] = $email;
-                $inputpesan["pesan_code"] = $code;
-                $inputpesan["pesan_tipe"] = $tipe;
-                $inputpesan["pesan_isi"] = $pesan;
-                $inputpesan["pesan_token"] = $token;
-                $this->db->insert("pesan", $inputpesan);
-                $pesan_id = $this->db->insert_id();
-                $pesan_code = $code;
+            // MULAI KIRIM PESAN KE USER
+            $login = $this->db->table("login")
+                ->select("user.user_token, user.user_email")
+                ->join("user", "user.user_id = login.user_id", "left")
+                ->where("login.login_status", 0)
+                ->where("login.login_date", date("Y-m-d"))
+                ->get();
 
-                $message = $pesan_code . '|' . $pesan_id . '|' . $email . '|' . $tipe . '|' . $pesan . '|' . $token;
+            foreach ($login->getResult() as $row) {
+
+                $token = $row->user_token;
+                $email = $row->user_email;
+
+                $inputpesan = [
+                    "pesan_email" => $email,
+                    "pesan_code"  => $code,
+                    "pesan_tipe"  => $tipe,
+                    "pesan_isi"   => $pesan,
+                    "pesan_token" => $token
+                ];
+
+                $this->db->table("pesan")->insert($inputpesan);
+                $pesan_id = $this->db->insertID();
+
+                $message = $code . '|' . $pesan_id . '|' . $email . '|' . $tipe . '|' . $pesan . '|' . $token;
+
                 $url = "https://qithy.my.id:8000/broadcast/TRP-20241010-01?kirim=&message=" . urlencode($message);
-                $data["urlbroadcast"] = urldecode($url);
+
                 $response = @file_get_contents($url);
+
                 echo $response;
+
                 if ($response === false) {
                     error_log("Gagal kirim notif");
                     return false;
@@ -99,30 +109,37 @@ class api extends baseController
         }
 
         if ($tipe == "member") {
-            $member_id = $this->input->get("id");
-            $member = $this->db
-                ->where("member_id", member_id)
-                ->get("member");
-            foreach ($member->result() as $member) {
-                $email = $login->member_email;
-                $token = $login->member_token;
-                $pesan = $this->input->get("pesan");
-                $code = $this->input->get("code");
 
-                $inputpesan["pesan_email"] = $email;
-                $inputpesan["pesan_code"] = $code;
-                $inputpesan["pesan_tipe"] = $tipe;
-                $inputpesan["pesan_isi"] = $pesan;
-                $inputpesan["pesan_token"] = $token;
-                $this->db->insert("pesan", $inputpesan);
-                $pesan_id = $this->db->insert_id();
-                $pesan_code = $code;
+            $member_id = $this->request->getGet("id");
 
-                $message = $pesan_code . '|' . $pesan_id . '|' . $email . '|' . $tipe . '|' . $pesan . '|' . $token;
+            $member = $this->db->table("member")
+                ->where("member_id", $member_id)
+                ->get();
+
+            foreach ($member->getResult() as $row) {
+
+                $email = $row->member_email;
+                $token = $row->member_token;
+
+                $inputpesan = [
+                    "pesan_email" => $email,
+                    "pesan_code"  => $code,
+                    "pesan_tipe"  => $tipe,
+                    "pesan_isi"   => $pesan,
+                    "pesan_token" => $token
+                ];
+
+                $this->db->table("pesan")->insert($inputpesan);
+                $pesan_id = $this->db->insertID();
+
+                $message = $code . '|' . $pesan_id . '|' . $email . '|' . $tipe . '|' . $pesan . '|' . $token;
+
                 $url = "https://qithy.my.id:8000/broadcast/TRP-20241010-01?kirim=&message=" . urlencode($message);
-                $data["urlbroadcast"] = urldecode($url);
+
                 $response = @file_get_contents($url);
+
                 echo $response;
+
                 if ($response === false) {
                     error_log("Gagal kirim notif");
                     return false;
@@ -130,6 +147,7 @@ class api extends baseController
             }
         }
     }
+
     public function listproductandroid()
     {
 
