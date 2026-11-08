@@ -248,74 +248,111 @@ class pesanan_m extends core_m
         // update
         if ($this->request->getPost("change") == "OK") {
 
-            $input["pesanan_accept"] = $this->request->getPost("pesanan_accept");
+            $pesanan_id = $this->request->getPost("pesanan_id");
+            $pesanan_accept = $this->request->getPost("pesanan_accept");
+
+            $input["pesanan_accept"] = $pesanan_accept;
             $input["store_id"] = session()->get("store_id");
 
             $this->db->table('pesanan')->update(
                 $input,
-                array("pesanan_id" => $this->request->getPost("pesanan_id"))
+                [
+                    "pesanan_id" => $pesanan_id,
+                    "store_id"   => session()->get("store_id")
+                ]
             );
 
             $data["message"] = "Update Success";
 
             // =========================================
-            // KIRIM NOTIFIKASI LANGSUNG KE FCM
+            // KIRIM NOTIFIKASI KE MEMBER MELALUI FCM
             // =========================================
 
-            $tipe  = "member";
-            $code  = 0;
-            $pesan = "Pesanan anda akan diantar. Harap siapkan uang pas!";
+            // Notifikasi hanya dikirim ketika pesanan selesai
+            if ((int) $pesanan_accept == 1) {
 
-            $member_id = $this->request->getPost("member_id");
+                $tipe  = "member";
+                $code  = 0;
+                $pesan = "Pesanan anda akan diantar. Harap siapkan uang pas!";
 
-            $member = $this->db->table("member")
-                ->where("member_id", $member_id)
-                ->get();
+                $member_id = $this->request->getPost("member_id");
 
-            try {
+                $member = $this->db->table("member")
+                    ->where("member_id", $member_id)
+                    ->get();
 
-                // Ambil access token Firebase
-                $fcm = $this->getFcmAccessToken();
+                if ($member->getNumRows() > 0) {
 
-                foreach ($member->getResult() as $row) {
+                    try {
 
-                    $email = $row->member_email;
-                    $token = $row->member_token;
+                        // Ambil access token Firebase
+                        $fcm = $this->getFcmAccessToken();
 
-                    $inputpesan = [
-                        "pesan_email" => $email,
-                        "pesan_code"  => $code,
-                        "pesan_tipe"  => $tipe,
-                        "pesan_isi"   => $pesan,
-                        "pesan_token" => $token
-                    ];
+                        foreach ($member->getResult() as $row) {
 
-                    $this->db->table("pesan")->insert($inputpesan);
-                    $pesan_id = $this->db->insertID();
+                            $email = $row->member_email;
+                            $token = $row->member_token;
 
-                    // Format pesan tetap sama dengan sistem sebelumnya
-                    $message = $code . '|' . $pesan_id . '|' . $email . '|' . $tipe . '|' . $pesan . '|' . $token;
+                            if (empty($token)) {
+                                $data["notif"] = "Token member kosong.";
+                                continue;
+                            }
 
-                    // Kirim langsung ke Firebase
-                    $hasil = $this->sendFcm(
-                        $fcm['access_token'],
-                        $fcm['project_id'],
-                        $token,
-                        $message
-                    );
+                            // Simpan pesan ke database
+                            $inputpesan = [
+                                "pesan_email" => $email,
+                                "pesan_code"  => $code,
+                                "pesan_tipe"  => $tipe,
+                                "pesan_isi"   => $pesan,
+                                "pesan_token" => $token
+                            ];
 
-                    if ($hasil['success']) {
-                        $data["notif"] = "Berhasil mengirim notifikasi ke member.";
-                    } else {
+                            $this->db->table("pesan")->insert($inputpesan);
+
+                            $pesan_id = $this->db->insertID();
+
+                            // Format pesan enam bagian
+                            $message = $code . '|'
+                                . $pesan_id . '|'
+                                . $email . '|'
+                                . $tipe . '|'
+                                . $pesan . '|'
+                                . $token;
+
+                            // Kirim langsung ke FCM
+                            $hasil = $this->sendFcm(
+                                $fcm['access_token'],
+                                $fcm['project_id'],
+                                $token,
+                                $message
+                            );
+
+                            if ($hasil['success']) {
+
+                                $data["notif"] = "Berhasil mengirim notifikasi ke member.";
+                            } else {
+
+                                $data["notif"] = "Gagal mengirim notifikasi ke member.";
+
+                                log_message(
+                                    'error',
+                                    'FCM member gagal: ' . json_encode($hasil)
+                                );
+                            }
+                        }
+                    } catch (\Throwable $e) {
+
                         $data["notif"] = "Gagal mengirim notifikasi ke member.";
-                        log_message('error', 'FCM member gagal: ' . json_encode($hasil));
+
+                        log_message(
+                            'error',
+                            'FCM member: ' . $e->getMessage()
+                        );
                     }
+                } else {
+
+                    $data["notif"] = "Member tidak ditemukan.";
                 }
-            } catch (\Throwable $e) {
-
-                $data["notif"] = "Gagal mengirim notifikasi: " . $e->getMessage();
-
-                log_message('error', 'FCM member: ' . $e->getMessage());
             }
         }
 
