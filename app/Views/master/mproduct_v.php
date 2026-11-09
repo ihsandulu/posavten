@@ -473,7 +473,14 @@ if (isset($_GET["pcustomer"])) {
                                             <td><?= $no++; ?></td>
                                             <td><?= $usr->category_name; ?></td>
                                             <td>Per <?= $usr->unit_name; ?> <?= ($usr->product_nomsec)?" = ".$usr->product_nomsec:""; ?> <?= $usr->unitname2; ?></td>
-                                            <td><?= $usr->product_name; ?>(<?= $usr->product_id; ?>)</td>
+                                            <td>
+                                                <?= $usr->product_name; ?>(<?= $usr->product_id; ?>)
+                                                <form method="post" class="btn-action" style="">
+                                                    <button class="btn btn-sm btn-info" name="gantiid" value="OK"><span class="fa fa-edit" style="color:white;"></span> </button>
+                                                    <input type="hidden" name="product_id" value="<?= $usr->product_id; ?>" />
+                                                    <input type="text" name="product_idganti" value="<?= $usr->product_id; ?>" />
+                                                </form>
+                                        </td>
                                             <td>
                                                 <input type="text" class="form-control" id="product_batch<?= $usr->product_id; ?>" placeholder="" value="<?= $usr->product_batch; ?>">
                                                 <script>

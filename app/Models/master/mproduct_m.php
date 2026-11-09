@@ -98,6 +98,38 @@ class mproduct_m extends core_m
             }
         }
 
+        //ganti id
+        if ($this->request->getPost("gantiid") == "OK") {
+            $product_id = $this->request->getPost("product_id");
+            $product_idganti = $this->request->getPost("product_idganti");
+            
+            $buy["product_id"] = $product_idganti;
+            $this->db->table('buy')->update($buy, array("product_id" => $product_id));
+            
+            $pesanan["product_id"] = $product_idganti;
+            $this->db->table('pesanan')->update($pesanan, array("product_id" => $product_id));
+
+            $product["product_id"] = $product_idganti;
+            $this->db->table('product')->update($product, array("product_id" => $product_id));
+
+            $promoprod["product_id"] = $product_idganti;
+            $this->db->table('promoprod')->update($promoprod, array("product_id" => $product_id));
+
+            $purchased["product_id"] = $product_idganti;
+            $this->db->table('purchased')->update($purchased, array("product_id" => $product_id));
+
+            $sell["product_id"] = $product_idganti;
+            $this->db->table('sell')->update($sell, array("product_id" => $product_id));
+            
+            $transactiond["product_id"] = $product_idganti;
+            $this->db->table('transactiond')->update($transactiond, array("product_id" => $product_id));
+
+             $this->db
+                    ->table("stockopname")
+                    ->delete(array("product_id" => $product_id, "store_id" => session()->get("store_id")));
+            
+        }
+
         //delete
         if ($this->request->getPost("delete") == "OK") {
             $product_id = $this->request->getPost("product_id");
