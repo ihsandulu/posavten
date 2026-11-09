@@ -261,6 +261,7 @@ class api extends baseController
         $usr = $builder
             ->orderBy("pesanan.pesanan_accept", "ASC")
             ->orderBy("pesanan.pesanan_id", "DESC")
+            ->groupBy("pesanan.pesanan_nopesanan")
             ->get();
         // echo $this->db->getLastquery();die;
         $no = 1;
@@ -293,7 +294,7 @@ class api extends baseController
 
                     <button type="button"
                         class="btn btn-success w-100 btnSelesaikan"
-                        data-id="<?= esc($usr->pesanan_id); ?>">
+                        data-id="<?= esc($usr->pesanan_nopesanan); ?>">
 
                         <i class="fas fa-check-circle me-2"></i>
                         Selesaikan
@@ -305,15 +306,15 @@ class api extends baseController
 
     public function selesaikanpesanan()
     {
-        $pesanan_id = $this->request->getGet("pesanan_id");
+        $pesanan_nopesanan = $this->request->getGet("pesanan_nopesanan");
 
-        if (!$pesanan_id) {
+        if (!$pesanan_nopesanan) {
             return $this->response->setStatusCode(400)
                 ->setJSON(["status" => "error"]);
         }
 
         $this->db->table("pesanan")
-            ->where("pesanan_id", $pesanan_id)
+            ->where("pesanan_nopesanan", $pesanan_nopesanan)
             ->where("store_id", 1)
             ->update([
                 "pesanan_accept" => 1
