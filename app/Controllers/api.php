@@ -304,26 +304,139 @@ class api extends baseController
         <?php }
     }
 
+
     public function selesaikanpesanan()
     {
         $pesanan_nopesanan = $this->request->getGet("pesanan_nopesanan");
 
         if (!$pesanan_nopesanan) {
             return $this->response->setStatusCode(400)
-                ->setJSON(["status" => "error"]);
+                ->setJSON([
+                    "status" => "error",
+                    "message" => "Nomor pesanan tidak ditemukan."
+                ]);
         }
 
-        $this->db->table("pesanan")
-            ->where("pesanan_nopesanan", $pesanan_nopesanan)
-            ->where("store_id", 1)
-            ->update([
-                "pesanan_accept" => 1
-            ]);
+        try {
 
-        return $this->response->setJSON([
-            "status" => "success"
-        ]);
+            // 1. Ambil data member berdasarkan nomor pesanan
+            $member = $this->db->table("pesanan")
+                ->select("member.member_id, member.member_email, member.member_token")
+                ->join("member", "member.member_id = pesanan.member_id", "left")
+                ->where("pesanan.pesanan_nopesanan", $pesanan_nopesanan)
+                ->where("pesanan.store_id", 1)
+                ->get()
+                ->getRow();
+
+            if (!$member) {
+                return $this->response->setStatusCode(404)
+                    ->setJSON([
+                        "status" => "error",
+                        "message" => "Pesanan tidak ditemukan."
+                    ]);
+            }
+
+            // 2. Selesaikan seluruh detail pesanan
+            $this->db->table("pesanan")
+                ->where("pesanan_nopesanan", $pesanan_nopesanan)
+                ->where("store_id", 1)
+                ->where("pesanan_accept", 0)
+                ->update([
+                    "pesanan_accept" => 1
+                ]);
+
+            // 3. Periksa apakah pesanan berhasil diperbarui
+            if ($this->db->affectedRows() == 0) {
+                return $this->response->setJSON([
+                    "status" => "success",
+                    "message" => "Pesanan sudah diselesaikan sebelumnya.",
+                    "notif" => "skip"
+                ]);
+            }
+
+            // 4. Kirim notifikasi FCM ke member
+            $notifBerhasil = false;
+
+            if (!empty($member->member_token) && !empty($member->member_email)) {
+
+                try {
+
+                    $code = 0;
+                    $tipe = "member";
+                    $pesan = "Pesanan anda akan diantar. Harap siapkan uang pas!";
+
+                    // Ambil access token Firebase
+                    $fcm = $this->getFcmAccessToken();
+
+                    $accessToken = $fcm['access_token'];
+                    $projectId = $fcm['project_id'];
+
+                    // Simpan notifikasi ke database
+                    $inputpesan = [
+                        "pesan_email" => $member->member_email,
+                        "pesan_code"  => $code,
+                        "pesan_tipe"  => $tipe,
+                        "pesan_isi"   => $pesan,
+                        "pesan_token" => $member->member_token
+                    ];
+
+                    $this->db->table("pesan")->insert($inputpesan);
+                    $pesan_id = $this->db->insertID();
+
+                    // Format data sesuai format aplikasi Android
+                    $message = $code . '|' .
+                        $pesan_id . '|' .
+                        $member->member_email . '|' .
+                        $tipe . '|' .
+                        $pesan . '|' .
+                        $member->member_token;
+
+                    // Kirim langsung ke Firebase
+                    $hasil = $this->sendFcm(
+                        $accessToken,
+                        $projectId,
+                        $member->member_token,
+                        $message,
+                        $pesan
+                    );
+
+                    $notifBerhasil = !empty($hasil['success']);
+
+                    if (!$notifBerhasil) {
+                        log_message(
+                            'error',
+                            'FCM gagal untuk member ' .
+                                $member->member_email . ': ' .
+                                json_encode($hasil)
+                        );
+                    }
+                } catch (\Throwable $e) {
+
+                    log_message(
+                        'error',
+                        'FCM pesanan ' . $pesanan_nopesanan .
+                            ': ' . $e->getMessage()
+                    );
+                }
+            }
+
+            return $this->response->setJSON([
+                "status" => "success",
+                "message" => "Pesanan berhasil diselesaikan.",
+                "notif" => $notifBerhasil ? "success" : "failed"
+            ]);
+        } catch (\Throwable $e) {
+
+            log_message('error', 'Selesaikan pesanan: ' . $e->getMessage());
+
+            return $this->response->setStatusCode(500)
+                ->setJSON([
+                    "status" => "error",
+                    "message" => $e->getMessage()
+                ]);
+        }
     }
+
 
 
     public function kirimnotif()
