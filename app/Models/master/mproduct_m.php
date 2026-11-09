@@ -109,9 +109,6 @@ class mproduct_m extends core_m
             $pesanan["product_id"] = $product_idganti;
             $this->db->table('pesanan')->update($pesanan, array("product_id" => $product_id));
 
-            $product["product_id"] = $product_idganti;
-            $this->db->table('product')->update($product, array("product_id" => $product_id));
-
             $promoprod["product_id"] = $product_idganti;
             $this->db->table('promoprod')->update($promoprod, array("product_id" => $product_id));
 
