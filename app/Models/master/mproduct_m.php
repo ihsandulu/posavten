@@ -115,8 +115,9 @@ class mproduct_m extends core_m
             $purchased["product_id"] = $product_idganti;
             $this->db->table('purchased')->update($purchased, array("product_id" => $product_id));
 
-            $sell["product_id"] = $product_idganti;
-            $this->db->table('sell')->update($sell, array("product_id" => $product_id));
+            $this->db
+                    ->table("sell")
+                    ->delete(array("product_id" => $product_id, "store_id" => session()->get("store_id")));
             
             $transactiond["product_id"] = $product_idganti;
             $this->db->table('transactiond')->update($transactiond, array("product_id" => $product_id));
