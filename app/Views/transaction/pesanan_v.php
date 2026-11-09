@@ -204,6 +204,7 @@
                                         $builder->where("pesanan.pesanan_date", date("Y-m-d"));
                                     }
                                     $usr = $builder
+                                        ->groupBy("pesanan.pesanan_nopesanan")
                                         ->orderBy("pesanan.pesanan_accept", "ASC")
                                         ->orderBy("pesanan.pesanan_id", "DESC")
                                         ->get();

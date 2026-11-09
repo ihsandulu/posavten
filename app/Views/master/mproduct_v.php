@@ -473,7 +473,7 @@ if (isset($_GET["pcustomer"])) {
                                             <td><?= $no++; ?></td>
                                             <td><?= $usr->category_name; ?></td>
                                             <td>Per <?= $usr->unit_name; ?> <?= ($usr->product_nomsec)?" = ".$usr->product_nomsec:""; ?> <?= $usr->unitname2; ?></td>
-                                            <td><?= $usr->product_name; ?></td>
+                                            <td><?= $usr->product_name; ?>(<?= $usr->product_id; ?>)</td>
                                             <td>
                                                 <input type="text" class="form-control" id="product_batch<?= $usr->product_id; ?>" placeholder="" value="<?= $usr->product_batch; ?>">
                                                 <script>
