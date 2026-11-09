@@ -248,17 +248,15 @@ class pesanan_m extends core_m
         // update
         if ($this->request->getPost("change") == "OK") {
 
-            $pesanan_id = $this->request->getPost("pesanan_id");
+            $pesanan_nopesanan = $this->request->getPost("pesanan_nopesanan");
             $pesanan_accept = $this->request->getPost("pesanan_accept");
 
             $input["pesanan_accept"] = $pesanan_accept;
-            $input["store_id"] = session()->get("store_id");
 
             $this->db->table('pesanan')->update(
                 $input,
                 [
-                    "pesanan_id" => $pesanan_id,
-                    "store_id"   => session()->get("store_id")
+                    "pesanan_nopesanan" => $pesanan_nopesanan
                 ]
             );
 

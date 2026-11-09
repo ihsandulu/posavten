@@ -183,6 +183,7 @@
                                         <th>No.</th>
                                         <th>Status</th>
                                         <th>Tanggal</th>
+                                        <th>Nomor Pesanan</th>
                                         <th>Nama</th>
                                         <th>Alamat Kirim</th>
                                     </tr>
@@ -224,7 +225,7 @@
                                                         <?= csrf_field(); ?>
 
                                                         <input type="hidden" name="pesanan_accept" value="1">
-                                                        <input type="hidden" name="pesanan_id" value="<?= $usr->pesanan_id; ?>">
+                                                        <input type="hidden" name="pesanan_nopesanan" value="<?= $usr->pesanan_nopesanan; ?>">
                                                         <input type="hidden" name="member_id" value="<?= $usr->member_id; ?>">
 
                                                         <span class="badge badge-warning px-3 py-2">
@@ -243,6 +244,7 @@
                                                 <?php } ?>
                                             </td>
                                             <td><?= $usr->pesanan_date; ?></td>
+                                            <td><?= $usr->pesanan_nopesanan; ?></td>
                                             <td><?= $usr->member_name; ?></td>
                                             <td><?= $usr->pesanan_alamat; ?></td>
                                         </tr>
