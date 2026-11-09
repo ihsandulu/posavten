@@ -16,7 +16,7 @@ class mproduct_m extends core_m
         } else {
             $productd["product_id"] = -1;
         }
-        $productd["store_id"] = session()->get("store_id");
+        $productd["store_id"] = 1;
         $us = $this->db
             ->table("product")
             ->getWhere($productd);
