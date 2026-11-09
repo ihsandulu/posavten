@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#eaf7ed">
+  <title>Business Centre AVICENA | BCAV</title>
+  <meta name="description" content="Selamat datang di Business Centre AVICENA (BCAV). Unduh aplikasi resmi BCAV untuk mulai menggunakan layanan kami.">
+  <style>
+    :root {
+      --green: #3c8b58;
+      --green-dark: #286a40;
+      --green-soft: #eaf7ed;
+      --green-pale: #f5fbf6;
+      --text: #203329;
+      --muted: #68796e;
+      --white: #fff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 10%, #d9f0df 0, transparent 28rem),
+        linear-gradient(145deg, #f7fcf8 0%, #eaf7ed 55%, #f8fcf9 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px 18px;
+    }
+    .page { width: 100%; max-width: 980px; }
+    .card {
+      position: relative;
+      overflow: hidden;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(60,139,88,.13);
+      border-radius: 30px;
+      box-shadow: 0 24px 70px rgba(43,100,60,.12);
+      padding: 54px 64px 42px;
+      text-align: center;
+    }
+    .card::before, .card::after {
+      content: ""; position: absolute; border-radius: 50%;
+      background: rgba(203,235,211,.34); pointer-events: none;
+    }
+    .card::before { width: 230px; height: 230px; top: -145px; right: -80px; }
+    .card::after { width: 190px; height: 190px; bottom: -130px; left: -75px; }
+    .content { position: relative; z-index: 1; }
+    .logo-wrap {
+      width: 126px; height: 126px; margin: 0 auto 22px;
+      display: grid; place-items: center;
+      background: linear-gradient(145deg, #f3fbf4, #e2f3e6);
+      border: 1px solid #d5ead9; border-radius: 34px;
+      box-shadow: 0 12px 28px rgba(60,139,88,.10);
+    }
+    .eyebrow {
+      display: inline-block; padding: 8px 15px; border-radius: 999px;
+      color: var(--green-dark); background: #edf8ef;
+      font-size: 12px; font-weight: 800; letter-spacing: 1.7px;
+    }
+    h1 {
+      margin: 18px 0 12px; font-size: clamp(31px, 5vw, 48px);
+      line-height: 1.13; letter-spacing: -1.5px;
+    }
+    h1 span { color: var(--green); }
+    .intro {
+      max-width: 650px; margin: 0 auto;
+      color: var(--muted); font-size: 17px; line-height: 1.8;
+    }
+    .download-panel {
+      max-width: 610px; margin: 34px auto 0; padding: 25px;
+      border: 1px solid #e1efe4; border-radius: 22px;
+      background: linear-gradient(135deg, #f7fcf8, #edf8ef);
+    }
+    .download-panel h2 { margin: 0 0 8px; font-size: 20px; }
+    .download-panel p { margin: 0 0 20px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+    .download-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 11px;
+      min-height: 54px; padding: 0 28px; border-radius: 15px;
+      color: white; background: linear-gradient(135deg, #4b9b65, #32794a);
+      text-decoration: none; font-size: 16px; font-weight: 750;
+      box-shadow: 0 10px 22px rgba(50,121,74,.22);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .download-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 26px rgba(50,121,74,.28); }
+    .hint { margin-top: 13px; color: #829087; font-size: 12px; }
+    footer { margin-top: 30px; color: #829087; font-size: 12px; }
+    @media (max-width: 600px) {
+      .card { padding: 38px 22px 30px; border-radius: 24px; }
+      .logo-wrap { width: 108px; height: 108px; border-radius: 29px; }
+      .intro { font-size: 15px; }
+      .download-panel { padding: 22px 16px; }
+      .download-btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="card">
+      <div class="content">
+        <div class="logo-wrap" aria-label="Logo Business Centre AVICENA">
+          <!-- Logo BCAV berbentuk emblem daun dan huruf BCAV; dapat diganti dengan logo resmi. -->
+          <img src="BCAV.png" alt="Logo BCAV" width="92" height="92">
+        </div>
+
+        <div class="eyebrow">BUSINESS CENTRE AVICENA</div>
+        <h1>Selamat Datang di <span>BCAV</span></h1>
+        <p class="intro">
+          Selamat datang di <strong>Business Centre AVICENA (BCAV)</strong>.
+          Kami hadir untuk memberikan kemudahan dalam mengakses layanan Business Centre
+          melalui aplikasi yang praktis dan mudah digunakan.
+        </p>
+
+        <div class="download-panel">
+          <h2>Mulai gunakan aplikasi BCAV</h2>
+          <p>Silakan unduh aplikasi resmi kami melalui tombol di bawah ini, lalu pasang aplikasi pada perangkat Android Anda.</p>
+          <a class="download-btn" href="bcav.apk" download>
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 3v11m0 0 4-4m-4 4-4-4M4 17v3h16v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Download Aplikasi BCAV
+          </a>
+          <div class="hint">Aplikasi Android • Pastikan ruang penyimpanan perangkat mencukupi</div>
+        </div>
+
+        <footer>© <span id="year"></span> Business Centre AVICENA · BCAV</footer>
+      </div>
+    </section>
+  </main>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
