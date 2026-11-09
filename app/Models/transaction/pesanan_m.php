@@ -159,7 +159,8 @@ class pesanan_m extends core_m
                 'Authorization: Bearer ' . $accessToken,
                 'Content-Type: application/json'
             ],
-            CURLOPT_TIMEOUT => 30
+            CURLOPT_CONNECTTIMEOUT => 15,
+            CURLOPT_TIMEOUT        => 30
         ]);
 
         $response = curl_exec($ch);
@@ -170,15 +171,19 @@ class pesanan_m extends core_m
 
         if ($response === false) {
             return [
-                'success' => false,
-                'error'   => $curlError
+                'success'   => false,
+                'http_code' => $httpCode,
+                'error'     => $curlError
             ];
         }
 
+        $result = json_decode($response, true);
+
         return [
-            'success' => ($httpCode == 200),
+            'success'   => ($httpCode === 200),
             'http_code' => $httpCode,
-            'response' => json_decode($response, true)
+            'response'  => $result,
+            'raw'       => $response
         ];
     }
 
@@ -325,6 +330,10 @@ class pesanan_m extends core_m
                                 $message,
                                 $pesan
                             );
+                            log_message(
+                                'error',
+                                'HASIL FCM MEMBER: ' . json_encode($hasil)
+                            );
 
                             if ($hasil['success']) {
 
@@ -421,6 +430,10 @@ class pesanan_m extends core_m
                                 $token,
                                 $message,
                                 $pesan
+                            );
+                            log_message(
+                                'error',
+                                'HASIL FCM USER: ' . json_encode($hasil)
                             );
 
                             if (!$hasil['success']) {
