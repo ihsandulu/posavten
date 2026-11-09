@@ -330,16 +330,7 @@ class pesanan_m extends core_m
                                 $message,
                                 $pesan
                             );
-                           /*  log_message(
-                                'error',
-                                'HASIL FCM MEMBER: ' . json_encode($hasil)
-                            ); */
-                            file_put_contents(
-                                WRITEPATH . 'logs/fcm-debug.txt',
-                                date('Y-m-d H:i:s') . ' HASIL FCM MEMBER: '
-                                    . json_encode($hasil) . PHP_EOL,
-                                FILE_APPEND
-                            );
+                          
 
                             if ($hasil['success']) {
 
@@ -437,16 +428,7 @@ class pesanan_m extends core_m
                                 $message,
                                 $pesan
                             );
-                            /* log_message(
-                                'error',
-                                'HASIL FCM USER: ' . json_encode($hasil)
-                            ); */
-                            file_put_contents(
-                                WRITEPATH . 'logs/fcm-debug.txt',
-                                date('Y-m-d H:i:s') . ' HASIL FCM USER: '
-                                    . json_encode($hasil) . PHP_EOL,
-                                FILE_APPEND
-                            );
+                            
 
                             if (!$hasil['success']) {
 
