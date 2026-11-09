@@ -469,7 +469,10 @@ class api extends baseController
         }
     }
 
-
+    public function listproductandroid1()
+    {
+        echo "apa";
+    }
     public function listproductandroid()
     {
 
