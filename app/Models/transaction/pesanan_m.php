@@ -352,6 +352,100 @@ class pesanan_m extends core_m
 
                     $data["notif"] = "Member tidak ditemukan.";
                 }
+
+                // =========================================
+                // KIRIM NOTIFIKASI KE USER / PENJAGA TOKO
+                // =========================================
+
+                try {
+
+                    $tipe  = "user";
+                    $code  = 0;
+                    $pesan = "Pesanan nomor " . $pesanan_nopesanan . " telah selesai.";
+
+                    // Ambil user yang login aktif hari ini,
+                    // hanya login terakhir dari masing-masing user
+                    $users = $this->db->table("login")
+                        ->select("user.user_token, user.user_email")
+                        ->join("user", "user.user_id = login.user_id", "left")
+                        ->join(
+                            "(SELECT user_id, MAX(login_datetime) AS last_login
+              FROM login
+              WHERE login_date = '" . date("Y-m-d") . "'
+              GROUP BY user_id) latest",
+                            "latest.user_id = login.user_id AND latest.last_login = login.login_datetime"
+                        )
+                        ->where("login.login_status", 0)
+                        ->where("login.login_date", date("Y-m-d"))
+                        ->get();
+
+                    if ($users->getNumRows() > 0) {
+
+                        // Ambil access token Firebase
+                        $fcmUser = $this->getFcmAccessToken();
+
+                        foreach ($users->getResult() as $row) {
+
+                            $email = $row->user_email;
+                            $token = $row->user_token;
+
+                            if (empty($token)) {
+                                continue;
+                            }
+
+                            // Simpan pesan ke database
+                            $inputpesan = [
+                                "pesan_email" => $email,
+                                "pesan_code"  => $code,
+                                "pesan_tipe"  => $tipe,
+                                "pesan_isi"   => $pesan,
+                                "pesan_token" => $token
+                            ];
+
+                            $this->db->table("pesan")->insert($inputpesan);
+
+                            $pesan_id = $this->db->insertID();
+
+                            // Format pesan enam bagian
+                            $message = $code . '|'
+                                . $pesan_id . '|'
+                                . $email . '|'
+                                . $tipe . '|'
+                                . $pesan . '|'
+                                . $token;
+
+                            // Kirim notifikasi ke FCM
+                            $hasil = $this->sendFcm(
+                                $fcmUser['access_token'],
+                                $fcmUser['project_id'],
+                                $token,
+                                $message,
+                                $pesan
+                            );
+
+                            if (!$hasil['success']) {
+
+                                log_message(
+                                    'error',
+                                    'FCM user gagal: ' . json_encode($hasil)
+                                );
+                            }
+                        }
+
+                        $data["notif_user"] = "Notifikasi dikirim ke petugas toko.";
+                    } else {
+
+                        $data["notif_user"] = "Tidak ada petugas toko yang login hari ini.";
+                    }
+                } catch (\Throwable $e) {
+
+                    $data["notif_user"] = "Gagal mengirim notifikasi ke petugas toko.";
+
+                    log_message(
+                        'error',
+                        'FCM user: ' . $e->getMessage()
+                    );
+                }
             }
         }
 
