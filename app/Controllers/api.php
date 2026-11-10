@@ -263,10 +263,31 @@ class api extends baseController
             ->orderBy("pesanan.pesanan_id", "DESC")
             ->groupBy("pesanan.pesanan_nopesanan")
             ->get();
+        $daftarPesanan = $usr->getResult();
         // echo $this->db->getLastquery();die;
+
+        $nomorPesanan = array_column($daftarPesanan, "pesanan_nopesanan");
+
+        // 3. Ambil semua produk berdasarkan nomor pesanan
+        $listproduk = [];
+
+        if (!empty($nomorPesanan)) {
+            $produk = $this->db
+                ->table("pesanan")
+                ->join("product", "product.product_id=pesanan.product_id", "left")
+                ->where("pesanan.store_id", session()->get("store_id"))
+                ->whereIn("pesanan.pesanan_nopesanan", $nomorPesanan)
+                ->get();
+
+            foreach ($produk->getResult() as $p) {
+                $listproduk[$p->pesanan_nopesanan][] = $p->product_name;
+            }
+        }
+
+
         $no = 1;
         $status = array("Proses", "Selesai");
-        foreach ($usr->getResult() as $usr) {
+        foreach ($daftarPesanan as $usr) {
 ?>
             <div class="card mb-3 border shadow-sm">
                 <div class="card-body">
@@ -291,6 +312,18 @@ class api extends baseController
                             <?= $usr->pesanan_alamat; ?>
                         </div>
                     </div>
+
+                    <div class="mb-3">
+                        <small class="text-muted">Produk Dipesan</small>
+                        <div>
+                            <?php
+                            $produkPesanan = $listproduk[$usr->pesanan_nopesanan] ?? [];
+                            echo esc(implode(", ", $produkPesanan));
+                            ?>
+                        </div>
+                    </div>
+
+
 
                     <button type="button"
                         class="btn btn-success w-100 btnSelesaikan"
