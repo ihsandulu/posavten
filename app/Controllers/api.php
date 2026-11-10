@@ -291,6 +291,32 @@ class api extends baseController
                             <?= $usr->pesanan_alamat; ?>
                         </div>
                     </div>
+                    <?php
+                    $produk = $this->db
+                        ->table("pesanan")
+                        ->join("product", "product.product_id=pesanan.product_id", "left")
+                        ->where("pesanan.pesanan_nopesanan", $usr->pesanan_nopesanan)
+                        ->get();
+                    ?>
+
+                    <div class="bg-light rounded p-3 mb-3">
+                        <div class="fw-bold mb-2">
+                            <i class="fas fa-shopping-basket me-2"></i>
+                            Daftar Produk
+                        </div>
+
+                        <?php
+                        $no = 1;
+                        foreach ($produk->getResult() as $p) {
+                        ?>
+                            <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                                <div>
+                                    <small class="text-muted"><?= $no++; ?>.</small>
+                                    <span class="fw-semibold"><?= esc($p->product_name); ?></span>
+                                </div>
+                            </div>
+                        <?php } ?>
+                    </div>
 
                     <button type="button"
                         class="btn btn-success w-100 btnSelesaikan"
