@@ -241,53 +241,58 @@ class api extends baseController
         }
     }
 
+
     public function listpesananandroid()
     {
+        // Filter tanggal
+        $from = $this->request->getGet("from");
+        $to   = $this->request->getGet("to");
+
+        if (empty($from)) {
+            $from = date("Y-m-d");
+        }
+
+        if (empty($to)) {
+            $to = date("Y-m-d");
+        }
+
+        // 1. Ambil daftar nomor pesanan
         $builder = $this->db
             ->table("pesanan")
             ->join("member", "member.member_id=pesanan.member_id", "left")
             ->where("pesanan.store_id", 1)
-            ->where("pesanan.pesanan_accept", 0);
-        if (isset($_GET["from"]) && $_GET["from"] != "") {
-            $builder->where("pesanan.pesanan_date >=", $this->request->getGet("from"));
-        } else {
-            $builder->where("pesanan.pesanan_date", date("Y-m-d"));
-        }
-        if (isset($_GET["to"]) && $_GET["to"] != "") {
-            $builder->where("pesanan.pesanan_date <=", $this->request->getGet("to"));
-        } else {
-            $builder->where("pesanan.pesanan_date", date("Y-m-d"));
-        }
+            ->where("pesanan.pesanan_accept", 0)
+            ->where("pesanan.pesanan_date >=", $from)
+            ->where("pesanan.pesanan_date <=", $to);
+
         $usr = $builder
-            ->orderBy("pesanan.pesanan_accept", "ASC")
             ->orderBy("pesanan.pesanan_id", "DESC")
             ->groupBy("pesanan.pesanan_nopesanan")
             ->get();
-        $daftarPesanan = $usr->getResult();
-        // echo $this->db->getLastquery();die;
 
-        $nomorPesanan = array_column($daftarPesanan, "pesanan_nopesanan");
+        $daftarPesanan = $usr->getResult();
+
+        // 2. Ambil nomor pesanan
+        $nomorPesanan = array_map(
+            function ($p) {
+                return $p->pesanan_nopesanan;
+            },
+            $daftarPesanan
+        );
 
         // 3. Ambil semua produk berdasarkan nomor pesanan
         $listproduk = [];
 
         if (!empty($nomorPesanan)) {
+
             $produk = $this->db
                 ->table("pesanan")
                 ->join("product", "product.product_id=pesanan.product_id", "left")
                 ->where("pesanan.store_id", 1)
-                ->where("pesanan.pesanan_accept", 0);
-            if (isset($_GET["from"]) && $_GET["from"] != "") {
-                $produk->where("pesanan.pesanan_date >=", $this->request->getGet("from"));
-            } else {
-                $produk->where("pesanan.pesanan_date", date("Y-m-d"));
-            }
-            if (isset($_GET["to"]) && $_GET["to"] != "") {
-                $produk->where("pesanan.pesanan_date <=", $this->request->getGet("to"));
-            } else {
-                $produk->where("pesanan.pesanan_date", date("Y-m-d"));
-            }
-            $produk->whereIn("pesanan.pesanan_nopesanan", $nomorPesanan)
+                ->where("pesanan.pesanan_accept", 0)
+                ->where("pesanan.pesanan_date >=", $from)
+                ->where("pesanan.pesanan_date <=", $to)
+                ->whereIn("pesanan.pesanan_nopesanan", $nomorPesanan)
                 ->get();
 
             foreach ($produk->getResult() as $p) {
@@ -295,16 +300,17 @@ class api extends baseController
             }
         }
 
-
+        // 4. Tampilkan pesanan
         $no = 1;
         $status = array("Proses", "Selesai");
+
         foreach ($daftarPesanan as $usr) {
 ?>
             <div class="card mb-3 border shadow-sm">
                 <div class="card-body">
 
                     <div class="d-flex justify-content-between">
-                        <strong>Pesanan <?= $usr->pesanan_nopesanan; ?></strong>
+                        <strong>Pesanan <?= esc($usr->pesanan_nopesanan); ?></strong>
                         <span class="badge bg-warning text-dark">
                             Menunggu
                         </span>
@@ -314,14 +320,12 @@ class api extends baseController
 
                     <div class="mb-2">
                         <small class="text-muted">Nama Pemesan</small>
-                        <div class="fw-bold"><?= $usr->member_name; ?></div>
+                        <div class="fw-bold"><?= esc($usr->member_name); ?></div>
                     </div>
 
                     <div class="mb-3">
                         <small class="text-muted">Alamat Pengantaran</small>
-                        <div>
-                            <?= $usr->pesanan_alamat; ?>
-                        </div>
+                        <div><?= esc($usr->pesanan_alamat); ?></div>
                     </div>
 
                     <div class="mb-3">
@@ -334,8 +338,6 @@ class api extends baseController
                         </div>
                     </div>
 
-
-
                     <button type="button"
                         class="btn btn-success w-100 btnSelesaikan"
                         data-id="<?= esc($usr->pesanan_nopesanan); ?>">
@@ -343,10 +345,13 @@ class api extends baseController
                         <i class="fas fa-check-circle me-2"></i>
                         Selesaikan
                     </button>
+
                 </div>
             </div>
-        <?php }
+        <?php
+        }
     }
+
 
 
     public function selesaikanpesanan()
