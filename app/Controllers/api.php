@@ -241,100 +241,88 @@ class api extends baseController
         }
     }
 
-
     public function listpesananandroid()
     {
         // 1. Ambil daftar pesanan
-        $builder = $this->db
-            ->table("pesanan")
-            ->join("member", "member.member_id=pesanan.member_id", "left")
-            ->where("pesanan.store_id", session()->get("store_id"));
+                                    $builder = $this->db
+                                        ->table("pesanan")
+                                        ->join("member", "member.member_id=pesanan.member_id", "left")
+                                        ->where("pesanan.store_id", session()->get("store_id"));
 
-        $from = $this->request->getGet("from");
-        $to   = $this->request->getGet("to");
+                                    if ($this->request->getGet("from") != "") {
+                                        $builder->where("pesanan.pesanan_date >=", $this->request->getGet("from"));
+                                    } else {
+                                        $builder->where("pesanan.pesanan_date", date("Y-m-d"));
+                                    }
 
-        $builder->where(
-            "pesanan.pesanan_date >=",
-            $from ?: date("Y-m-d")
-        );
+                                    if ($this->request->getGet("to") != "") {
+                                        $builder->where("pesanan.pesanan_date <=", $this->request->getGet("to"));
+                                    } else {
+                                        $builder->where("pesanan.pesanan_date", date("Y-m-d"));
+                                    }
 
-        $builder->where(
-            "pesanan.pesanan_date <=",
-            $to ?: date("Y-m-d")
-        );
+                                    $usr = $builder
+                                        ->groupBy("pesanan.pesanan_nopesanan")
+                                        ->orderBy("pesanan.pesanan_accept", "ASC")
+                                        ->orderBy("pesanan.pesanan_id", "DESC")
+                                        ->get();
 
-        $usr = $builder
-            ->groupBy("pesanan.pesanan_nopesanan")
-            ->orderBy("pesanan.pesanan_accept", "ASC")
-            ->orderBy("pesanan.pesanan_id", "DESC")
-            ->get();
+                                    $daftarPesanan = $usr->getResult();
 
-        $daftarPesanan = $usr->getResult();
+                                    // 2. Kumpulkan nomor pesanan
+                                    $nomorPesanan = array_column($daftarPesanan, "pesanan_nopesanan");
 
-        // 2. Kumpulkan nomor pesanan
-        $nomorPesanan = array_column(
-            $daftarPesanan,
-            "pesanan_nopesanan"
-        );
+                                    // 3. Ambil semua produk berdasarkan nomor pesanan
+                                    $listproduk = [];
 
-        // 3. Ambil semua produk sekaligus
-        $listproduk = [];
+                                    if (!empty($nomorPesanan)) {
+                                        $produk = $this->db
+                                            ->table("pesanan")
+                                            ->join("product", "product.product_id=pesanan.product_id", "left")
+                                            ->where("pesanan.store_id", session()->get("store_id"))
+                                            ->whereIn("pesanan.pesanan_nopesanan", $nomorPesanan)
+                                            ->get();
 
-        if (!empty($nomorPesanan)) {
-            $produk = $this->db
-                ->table("pesanan")
-                ->join(
-                    "product",
-                    "product.product_id=pesanan.product_id",
-                    "left"
-                )
-                ->where("pesanan.store_id", session()->get("store_id"))
-                ->whereIn("pesanan.pesanan_nopesanan", $nomorPesanan)
-                ->get();
+                                        foreach ($produk->getResult() as $p) {
+                                            $listproduk[$p->pesanan_nopesanan][] = $p->product_name;
+                                        }
+                                    }
 
-            foreach ($produk->getResult() as $p) {
-                $listproduk[$p->pesanan_nopesanan][] = $p->product_name;
-            }
-        }
+                                    // 4. Tampilkan pesanan
+                                    $no = 1;
 
-        // 4. Tampilkan pesanan
-        foreach ($daftarPesanan as $usr) {
+                                    foreach ($daftarPesanan as $usr) {
 ?>
-
             <div class="card mb-3 border shadow-sm">
                 <div class="card-body">
 
                     <div class="d-flex justify-content-between">
-                        <strong>
-                            Pesanan <?= esc($usr->pesanan_nopesanan); ?>
-                        </strong>
-
-                        <?php if ($usr->pesanan_accept == 0) { ?>
-                            <span class="badge bg-warning text-dark">
-                                Menunggu
-                            </span>
-                        <?php } else { ?>
-                            <span class="badge bg-success">
-                                Selesai
-                            </span>
-                        <?php } ?>
+                        <strong>Pesanan <?= $usr->pesanan_nopesanan; ?></strong>
+                        <span class="badge bg-warning text-dark">
+                            Menunggu
+                        </span>
                     </div>
 
                     <hr>
 
                     <div class="mb-2">
                         <small class="text-muted">Nama Pemesan</small>
-                        <div class="fw-bold">
-                            <?= esc($usr->member_name); ?>
-                        </div>
+                        <div class="fw-bold"><?= $usr->member_name; ?></div>
                     </div>
 
                     <div class="mb-3">
                         <small class="text-muted">Alamat Pengantaran</small>
                         <div>
-                            <?= esc($usr->pesanan_alamat); ?>
+                            <?= $usr->pesanan_alamat; ?>
                         </div>
                     </div>
+                    <?php
+                    $produk = $this->db
+                        ->table("pesanan")
+                        ->join("product", "product.product_id=pesanan.product_id", "left")
+                        ->where("pesanan.pesanan_nopesanan", $usr->pesanan_nopesanan)
+                        ->get();
+                    ?>
 
                     <div class="bg-light rounded p-3 mb-3">
                         <div class="fw-bold mb-2">
@@ -343,48 +331,29 @@ class api extends baseController
                         </div>
 
                         <?php
-                        $produkPesanan = $listproduk[$usr->pesanan_nopesanan] ?? [];
-                        $nop = 1;
-
-                        if (!empty($produkPesanan)) {
-                            foreach ($produkPesanan as $namaProduk) {
+                        $no = 1;
+                        foreach ($produk->getResult() as $p) {
                         ?>
-                                <div class="d-flex align-items-center border-bottom py-2">
-                                    <small class="text-muted me-2">
-                                        <?= $nop++; ?>.
-                                    </small>
-
-                                    <span class="fw-semibold">
-                                        <?= esc($namaProduk); ?>
-                                    </span>
+                            <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                                <div>
+                                    <small class="text-muted"><?= $no++; ?>.</small>
+                                    <span class="fw-semibold"><?= esc($p->product_name); ?></span>
                                 </div>
-                            <?php
-                            }
-                        } else {
-                            ?>
-                            <small class="text-muted">
-                                Tidak ada produk.
-                            </small>
+                            </div>
                         <?php } ?>
                     </div>
 
-                    <?php if ($usr->pesanan_accept == 0) { ?>
-                        <button type="button"
-                            class="btn btn-success w-100 btnSelesaikan"
-                            data-id="<?= esc($usr->pesanan_nopesanan); ?>">
+                    <button type="button"
+                        class="btn btn-success w-100 btnSelesaikan"
+                        data-id="<?= esc($usr->pesanan_nopesanan); ?>">
 
-                            <i class="fas fa-check-circle me-2"></i>
-                            Selesaikan
-                        </button>
-                    <?php } ?>
-
+                        <i class="fas fa-check-circle me-2"></i>
+                        Selesaikan
+                    </button>
                 </div>
             </div>
-
-        <?php
-        }
+        <?php }
     }
-
 
 
     public function selesaikanpesanan()
