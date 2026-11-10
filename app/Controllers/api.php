@@ -275,8 +275,19 @@ class api extends baseController
             $produk = $this->db
                 ->table("pesanan")
                 ->join("product", "product.product_id=pesanan.product_id", "left")
-                ->where("pesanan.store_id", session()->get("store_id"))
-                ->whereIn("pesanan.pesanan_nopesanan", $nomorPesanan)
+                ->where("pesanan.store_id", 1)
+                ->where("pesanan.pesanan_accept", 0);
+            if (isset($_GET["from"]) && $_GET["from"] != "") {
+                $produk->where("pesanan.pesanan_date >=", $this->request->getGet("from"));
+            } else {
+                $produk->where("pesanan.pesanan_date", date("Y-m-d"));
+            }
+            if (isset($_GET["to"]) && $_GET["to"] != "") {
+                $produk->where("pesanan.pesanan_date <=", $this->request->getGet("to"));
+            } else {
+                $produk->where("pesanan.pesanan_date", date("Y-m-d"));
+            }
+            $produk->whereIn("pesanan.pesanan_nopesanan", $nomorPesanan)
                 ->get();
 
             foreach ($produk->getResult() as $p) {
