@@ -186,6 +186,7 @@
                                         <th>Nomor Pesanan</th>
                                         <th>Nama</th>
                                         <th>Alamat Kirim</th>
+                                        <th>Produk</th>
                                     </tr>
                                 </thead>
                                 <tbody>
