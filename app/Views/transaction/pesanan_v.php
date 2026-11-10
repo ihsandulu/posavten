@@ -190,32 +190,59 @@
                                 </thead>
                                 <tbody>
                                     <?php
+                                    // 1. Ambil daftar pesanan
                                     $builder = $this->db
                                         ->table("pesanan")
                                         ->join("member", "member.member_id=pesanan.member_id", "left")
                                         ->where("pesanan.store_id", session()->get("store_id"));
-                                    if (isset($_GET["from"]) && $_GET["from"] != "") {
+
+                                    if ($this->request->getGet("from") != "") {
                                         $builder->where("pesanan.pesanan_date >=", $this->request->getGet("from"));
                                     } else {
                                         $builder->where("pesanan.pesanan_date", date("Y-m-d"));
                                     }
-                                    if (isset($_GET["to"]) && $_GET["to"] != "") {
+
+                                    if ($this->request->getGet("to") != "") {
                                         $builder->where("pesanan.pesanan_date <=", $this->request->getGet("to"));
                                     } else {
                                         $builder->where("pesanan.pesanan_date", date("Y-m-d"));
                                     }
+
                                     $usr = $builder
                                         ->groupBy("pesanan.pesanan_nopesanan")
                                         ->orderBy("pesanan.pesanan_accept", "ASC")
                                         ->orderBy("pesanan.pesanan_id", "DESC")
                                         ->get();
-                                    // echo $this->db->getLastquery();die;
+
+                                    $daftarPesanan = $usr->getResult();
+
+                                    // 2. Kumpulkan nomor pesanan
+                                    $nomorPesanan = array_column($daftarPesanan, "pesanan_nopesanan");
+
+                                    // 3. Ambil semua produk berdasarkan nomor pesanan
+                                    $listproduk = [];
+
+                                    if (!empty($nomorPesanan)) {
+                                        $produk = $this->db
+                                            ->table("pesanan")
+                                            ->join("product", "product.product_id=pesanan.product_id", "left")
+                                            ->where("pesanan.store_id", session()->get("store_id"))
+                                            ->whereIn("pesanan.pesanan_nopesanan", $nomorPesanan)
+                                            ->get();
+
+                                        foreach ($produk->getResult() as $p) {
+                                            $listproduk[$p->pesanan_nopesanan][] = $p->product_name;
+                                        }
+                                    }
+
+                                    // 4. Tampilkan pesanan
                                     $no = 1;
-                                    $status = array("Proses", "Selesai");
-                                    foreach ($usr->getResult() as $usr) {
+
+                                    foreach ($daftarPesanan as $usr) {
                                     ?>
                                         <tr>
                                             <td><?= $no++; ?></td>
+
                                             <td class="text-center align-middle">
                                                 <?php if ($usr->pesanan_accept == 0) { ?>
                                                     <form action="<?= base_url('pesanan'); ?>" method="post"
@@ -225,8 +252,8 @@
                                                         <?= csrf_field(); ?>
 
                                                         <input type="hidden" name="pesanan_accept" value="1">
-                                                        <input type="hidden" name="pesanan_nopesanan" value="<?= $usr->pesanan_nopesanan; ?>">
-                                                        <input type="hidden" name="member_id" value="<?= $usr->member_id; ?>">
+                                                        <input type="hidden" name="pesanan_nopesanan" value="<?= esc($usr->pesanan_nopesanan); ?>">
+                                                        <input type="hidden" name="member_id" value="<?= esc($usr->member_id); ?>">
 
                                                         <span class="badge badge-warning px-3 py-2">
                                                             <i class="fa fa-clock-o"></i> Proses
@@ -243,14 +270,20 @@
                                                     </span>
                                                 <?php } ?>
                                             </td>
-                                            <td><?= $usr->pesanan_date; ?></td>
-                                            <td><?= $usr->pesanan_nopesanan; ?></td>
-                                            <td><?= $usr->member_name; ?></td>
-                                            <td><?= $usr->pesanan_alamat; ?></td>
+
+                                            <td><?= esc($usr->pesanan_date); ?></td>
+                                            <td><?= esc($usr->pesanan_nopesanan); ?></td>
+                                            <td><?= esc($usr->member_name); ?></td>
+                                            <td><?= esc($usr->pesanan_alamat); ?></td>
+
+                                            <td>
+                                                <?php
+                                                $produkPesanan = $listproduk[$usr->pesanan_nopesanan] ?? [];
+                                                echo esc(implode(", ", $produkPesanan));
+                                                ?>
+                                            </td>
                                         </tr>
                                     <?php } ?>
-
-
                                 </tbody>
                             </table>
                         </div>
