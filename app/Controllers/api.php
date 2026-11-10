@@ -243,55 +243,30 @@ class api extends baseController
 
     public function listpesananandroid()
     {
-        // 1. Ambil daftar pesanan
-                                    $builder = $this->db
-                                        ->table("pesanan")
-                                        ->join("member", "member.member_id=pesanan.member_id", "left")
-                                        ->where("pesanan.store_id", session()->get("store_id"));
-
-                                    if ($this->request->getGet("from") != "") {
-                                        $builder->where("pesanan.pesanan_date >=", $this->request->getGet("from"));
-                                    } else {
-                                        $builder->where("pesanan.pesanan_date", date("Y-m-d"));
-                                    }
-
-                                    if ($this->request->getGet("to") != "") {
-                                        $builder->where("pesanan.pesanan_date <=", $this->request->getGet("to"));
-                                    } else {
-                                        $builder->where("pesanan.pesanan_date", date("Y-m-d"));
-                                    }
-
-                                    $usr = $builder
-                                        ->groupBy("pesanan.pesanan_nopesanan")
-                                        ->orderBy("pesanan.pesanan_accept", "ASC")
-                                        ->orderBy("pesanan.pesanan_id", "DESC")
-                                        ->get();
-
-                                    $daftarPesanan = $usr->getResult();
-
-                                    // 2. Kumpulkan nomor pesanan
-                                    $nomorPesanan = array_column($daftarPesanan, "pesanan_nopesanan");
-
-                                    // 3. Ambil semua produk berdasarkan nomor pesanan
-                                    $listproduk = [];
-
-                                    if (!empty($nomorPesanan)) {
-                                        $produk = $this->db
-                                            ->table("pesanan")
-                                            ->join("product", "product.product_id=pesanan.product_id", "left")
-                                            ->where("pesanan.store_id", session()->get("store_id"))
-                                            ->whereIn("pesanan.pesanan_nopesanan", $nomorPesanan)
-                                            ->get();
-
-                                        foreach ($produk->getResult() as $p) {
-                                            $listproduk[$p->pesanan_nopesanan][] = $p->product_name;
-                                        }
-                                    }
-
-                                    // 4. Tampilkan pesanan
-                                    $no = 1;
-
-                                    foreach ($daftarPesanan as $usr) {
+        $builder = $this->db
+            ->table("pesanan")
+            ->join("member", "member.member_id=pesanan.member_id", "left")
+            ->where("pesanan.store_id", 1)
+            ->where("pesanan.pesanan_accept", 0);
+        if (isset($_GET["from"]) && $_GET["from"] != "") {
+            $builder->where("pesanan.pesanan_date >=", $this->request->getGet("from"));
+        } else {
+            $builder->where("pesanan.pesanan_date", date("Y-m-d"));
+        }
+        if (isset($_GET["to"]) && $_GET["to"] != "") {
+            $builder->where("pesanan.pesanan_date <=", $this->request->getGet("to"));
+        } else {
+            $builder->where("pesanan.pesanan_date", date("Y-m-d"));
+        }
+        $usr = $builder
+            ->orderBy("pesanan.pesanan_accept", "ASC")
+            ->orderBy("pesanan.pesanan_id", "DESC")
+            ->groupBy("pesanan.pesanan_nopesanan")
+            ->get();
+        // echo $this->db->getLastquery();die;
+        $no = 1;
+        $status = array("Proses", "Selesai");
+        foreach ($usr->getResult() as $usr) {
 ?>
             <div class="card mb-3 border shadow-sm">
                 <div class="card-body">
@@ -315,32 +290,6 @@ class api extends baseController
                         <div>
                             <?= $usr->pesanan_alamat; ?>
                         </div>
-                    </div>
-                    <?php
-                    $produk = $this->db
-                        ->table("pesanan")
-                        ->join("product", "product.product_id=pesanan.product_id", "left")
-                        ->where("pesanan.pesanan_nopesanan", $usr->pesanan_nopesanan)
-                        ->get();
-                    ?>
-
-                    <div class="bg-light rounded p-3 mb-3">
-                        <div class="fw-bold mb-2">
-                            <i class="fas fa-shopping-basket me-2"></i>
-                            Daftar Produk
-                        </div>
-
-                        <?php
-                        $no = 1;
-                        foreach ($produk->getResult() as $p) {
-                        ?>
-                            <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-                                <div>
-                                    <small class="text-muted"><?= $no++; ?>.</small>
-                                    <span class="fw-semibold"><?= esc($p->product_name); ?></span>
-                                </div>
-                            </div>
-                        <?php } ?>
                     </div>
 
                     <button type="button"
