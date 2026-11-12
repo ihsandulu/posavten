@@ -179,8 +179,8 @@
                                     <i class="fa fa-ban fa-stack-2x text-danger"></i>
                                 </span> -->
                         </button>
-                        <button data-toggle="tooltip" data-placement="top" title="Transaksi Pending" onclick="listnota(2);nota(0);" class="btn  btn-warning fa fa-flag-checkered mb-2 btn-child" type="button"></button>
-                        <button data-toggle="tooltip" data-placement="top" title="Transaksi Sukses" onclick="listnota(0);nota(0);" class="btn  btn-success fa fa-check mb-2 btn-child" type="button"></button>
+                        <button data-toggle="tooltip" data-placement="top" title="Transaksi Pending" onclick="listnota(2);nota(0);refreshdelay(1000);" class="btn  btn-warning fa fa-flag-checkered mb-2 btn-child" type="button"></button>
+                        <button data-toggle="tooltip" data-placement="top" title="Transaksi Sukses" onclick="listnota(0);nota(0);refreshdelay(1000);" class="btn  btn-success fa fa-check mb-2 btn-child" type="button"></button>
                         <button data-toggle="tooltip" data-placement="top" title="Refresh Halaman" onclick="refresh();" class="btn  btn-info fa fa-refresh mb-2 btn-child" type="button"></button>
                         <?php
                         if (
@@ -745,6 +745,12 @@
                         plistproduct(type, product_name);
                     }
 
+                    function refreshdelay(delay) {                          
+                        setTimeout(function() {
+                            refresh();
+                        }, delay);
+                    }
+
                     function refresh() {
                         listnota(-1);
                         nota(0);
@@ -840,6 +846,7 @@
                     }
 
                     function createnota() {
+                        refresh();
                         let transaction_shift = $("#kasshift").val();
                         $.get("<?= base_url("createnota"); ?>", {
                                 transaction_shift: transaction_shift
@@ -956,6 +963,9 @@
                                     refreshlistproduct();
                                 });
                         }
+                        setTimeout(function() {
+                            refresh();
+                        }, 2000);
                     }
 
                     function updatestatus(transaction_id, transaction_status) {
